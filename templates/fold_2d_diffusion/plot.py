@@ -35,7 +35,6 @@ for folder in folders:
 # Keep the names short, as these will be in the legend.
 labels = {
     "run_0": "Baseline",
-    "run_1": "With Folds"
 }
 
 # Use the run key as the default label if not specified
