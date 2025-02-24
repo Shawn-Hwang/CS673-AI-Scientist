@@ -175,3 +175,8 @@ results/*
 
 # logs
 logs/
+*.out
+*.err
+
+# no fold runs
+no_fold_run/
