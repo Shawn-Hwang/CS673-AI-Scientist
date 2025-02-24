@@ -67,31 +67,82 @@ class SoftFold(nn.Module):
         Returns:
             output (torch.Tensor): The transformed tensor after the soft folding operation.
         """
-        # pad the input if the width is greater than the input width, raise error if input width is greater than fold width
-        if self.width > input_tensor.shape[1]:
-            input_tensor = F.pad(input_tensor, (0, self.width - input_tensor.shape[1]))
-        elif self.width < input_tensor.shape[1]:
-            raise ValueError(f"Input dimension ({input_tensor.shape[1]}) is greater than fold width ({self.width})")
 
-        # Compute x_dot_n, n_dot_n, and get scale_factor
-        eps = 1e-8  
-        x_dot_n = input_tensor @ self.n     # shape: (batch_size,)
-        n_dot_n = self.n @ self.n + eps     # shape: (1,) add epsilon to avoid division by zero
-        scale_factor = x_dot_n / n_dot_n    # shape: (batch_size,)
+        # Store original shape for later reshaping if needed
+        original_shape = input_tensor.shape
 
-        # p caclulates how far away the input data is from the hyperplane, scaled by the crease parameter
-        # positive p means the data is on the exterior of the hyperplane (if the side with the origin is 
-        # considered the interior) and negative p means the data is on the interior of the hyperplane
-        # the sigmoid variable helps to smooth the folding effect
-        p = self.crease * (x_dot_n - n_dot_n)
-        p = torch.clamp(p, min=-25.0, max=25.0)
-        sigmoid = torch.sigmoid(p)          # shape: (batch_size,)
+         # Handle different input dimensions
+        if len(original_shape) == 3:
+            # For 3D input (batch_size, seq_len, features)
+            batch_size, seq_len, feat_dim = original_shape
+            
+            # Verify feature dimension matches self.width
+            if feat_dim != self.width:
+                if feat_dim < self.width:
+                    # Pad if needed
+                    input_tensor = F.pad(input_tensor, (0, self.width - feat_dim))
+                elif feat_dim > self.width:
+                    raise ValueError(f"Input dimension ({feat_dim}) is greater than fold width ({self.width})")
+            
+            # Compute dot product for each position in the sequence
+            # Keep the batch and sequence dimensions intact
+            x_dot_n = torch.matmul(input_tensor, self.n)  # Shape: (batch_size, seq_len)
+            n_dot_n = torch.sum(self.n * self.n) + 1e-8   # Shape: scalar
+            scale_factor = x_dot_n / n_dot_n              # Shape: (batch_size, seq_len)
+            
+            # Calculate p and sigmoid
+            p = self.crease * (x_dot_n - n_dot_n)
+            p = torch.clamp(p, min=-25.0, max=25.0)
+            sigmoid = torch.sigmoid(p)                     # Shape: (batch_size, seq_len)
+            
+            # For broadcasting to work properly:
+            # 1. Turn self.n into shape (1, 1, width)
+            # 2. Turn scale_factor into shape (batch_size, seq_len, 1)
+            # 3. Turn sigmoid into shape (batch_size, seq_len, 1)
+            n_expanded = self.n.view(1, 1, -1)
+            scale_factor_expanded = scale_factor.unsqueeze(-1)  # Shape: (batch_size, seq_len, 1)
+            sigmoid_expanded = sigmoid.unsqueeze(-1)            # Shape: (batch_size, seq_len, 1)
+            
+            # Calculate residual vector
+            residual_vec = (1 - scale_factor_expanded) * n_expanded  # Shape: (batch_size, seq_len, width)
+            
+            # Apply the fold operation
+            output = input_tensor + self.stretch * sigmoid_expanded * residual_vec
+        
+        else:
+            # Original 2D case (batch_size, features)
+            # pad the input if the width is greater than the input width, raise error if input width is greater than fold width
+            if self.width > input_tensor.shape[-1]:
+                input_tensor = F.pad(input_tensor, (0, self.width - input_tensor.shape[1]))
+            elif self.width < input_tensor.shape[-1]:
+                raise ValueError(f"Input dimension ({input_tensor.shape[1]}) is greater than fold width ({self.width})")
+            
+            # print('DDDDDDDDDDDDDDDDDDDDDDDEbug After padding:',input_tensor.shape, needs_reshaping)
 
-        # Get the difference between the input and its orthogonal projection onto the hyperplane
-        # It's the offset that will be added to the input tensor stretch*sigmoid times to fold it 
-        # over the hyperplane (2 times for an exact fold)
-        residual_vec = (1 - scale_factor).unsqueeze(1) * self.n # shape: (batch_size, width)
-        return input_tensor + self.stretch * sigmoid.unsqueeze(1) * residual_vec   # shape: (batch_size, width)
+            # Compute x_dot_n, n_dot_n, and get scale_factor
+            eps = 1e-8  
+            x_dot_n = input_tensor @ self.n     # shape: (batch_size,)
+            n_dot_n = self.n @ self.n + eps     # shape: (1,) add epsilon to avoid division by zero
+            scale_factor = x_dot_n / n_dot_n    # shape: (batch_size,)
+
+            # p caclulates how far away the input data is from the hyperplane, scaled by the crease parameter
+            # positive p means the data is on the exterior of the hyperplane (if the side with the origin is 
+            # considered the interior) and negative p means the data is on the interior of the hyperplane
+            # the sigmoid variable helps to smooth the folding effect
+            p = self.crease * (x_dot_n - n_dot_n)
+            p = torch.clamp(p, min=-25.0, max=25.0)
+            sigmoid = torch.sigmoid(p)          # shape: (batch_size,)
+
+            # Get the difference between the input and its orthogonal projection onto the hyperplane
+            # It's the offset that will be added to the input tensor stretch*sigmoid times to fold it 
+            # over the hyperplane (2 times for an exact fold)
+            # print('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDebug', ((1 - scale_factor).unsqueeze(1)).shape, input_tensor.shape)
+            residual_vec = (1 - scale_factor).unsqueeze(1) * self.n # shape: (batch_size, width)
+
+             # Apply the fold operation
+            output = input_tensor + self.stretch * sigmoid.unsqueeze(1) * residual_vec
+        
+        return output
 
 class LayerNorm(nn.Module):
     """LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False"""
