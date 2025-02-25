@@ -5,9 +5,9 @@ import re
 import anthropic
 import backoff
 import openai
-import google.generativeai as genai
-# from google import genai
-from google.generativeai.types import GenerationConfig
+# import google.generativeai as genai
+from google import genai
+# from google.generativeai.types import GenerationConfig
 from google.genai.types import GenerateContentConfig
 
 MAX_NUM_TOKENS = 4096
@@ -256,45 +256,53 @@ def get_response_from_llm(
         content = response.choices[0].message.content
         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
 
-    # Original code
-    elif "gemini" in model:
-        new_msg_history = msg_history + [{"role": "user", "content": msg}]
-        # gemini_contents = [{"role": "system", "parts": system_message}]
-        gemini_contents = []
-        for m in new_msg_history:
-            gemini_contents.append({"role": m["role"], "parts": m["content"]})
-        response = client.generate_content(
-            contents=gemini_contents,
-            generation_config=GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=MAX_NUM_TOKENS,
-                candidate_count=1,
-            ),
-        )
-        content = response.text
-        new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
-
-    # # Updated code
+    # # Original code
     # elif "gemini" in model:
     #     new_msg_history = msg_history + [{"role": "user", "content": msg}]
-    #     # gemini_contents = [{"role": "system", "parts": system_message}]
-    #     gemini_contents = []
+    #     gemini_contents = [{"role": "system", "parts": system_message}]
     #     for m in new_msg_history:
     #         gemini_contents.append({"role": m["role"], "parts": m["content"]})
-    #     test_contents = "Explain how AI works"
-    #     response = client.models.generate_content(
-    #         model=model,
-    #         # contents=gemini_contents,
-    #         contents=test_contents,
-    #         config=GenerateContentConfig(
+    #     response = client.generate_content(
+    #         contents=gemini_contents,
+    #         generation_config=GenerationConfig(
     #             temperature=temperature,
     #             max_output_tokens=MAX_NUM_TOKENS,
     #             candidate_count=1,
-    #             system_instruction=system_message,
     #         ),
     #     )
     #     content = response.text
     #     new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
+
+    # Updated code for Google GenAI SDK v1.0
+    elif "gemini" in model:
+        # Create new message history with user message
+        new_msg_history = msg_history + [{"role": "user", "content": msg}]
+
+        # Create contents for the API call
+        gemini_contents = []
+
+         # Add conversation history
+        for m in new_msg_history:
+            gemini_contents.append({
+                "role": m["role"], 
+                "parts": [{"text": m["content"]}]
+            })
+
+        response = client.models.generate_content(
+            model=model,
+            contents=gemini_contents,
+            config=GenerateContentConfig(
+                temperature=temperature,
+                max_output_tokens=MAX_NUM_TOKENS,
+                candidate_count=1,
+                system_instruction=system_message,
+            ),
+        )
+        content = response.text
+        new_msg_history = new_msg_history + [{"role": "model", "content": content}]
+        print(content)
+
+
     else:
         raise ValueError(f"Model {model} not supported.")
 
@@ -369,30 +377,30 @@ def create_client(model):
             base_url="https://openrouter.ai/api/v1"
         ), "meta-llama/llama-3.1-405b-instruct"
     
-    # Original code
-    elif "gemini" in model:
-        print(f"Using Google Generative AI with model {model}.")
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        client = genai.GenerativeModel(model)
-        return client, model
-
-    # # Updated code
+    # # Original code
     # elif "gemini" in model:
     #     print(f"Using Google Generative AI with model {model}.")
-    #     # genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-    #     # generation_config = {
-    #     # "temperature": 1,
-    #     # "top_p": 0.95,
-    #     # "top_k": 40,
-    #     # "max_output_tokens": 8192,
-    #     # "response_mime_type": "text/plain",
-    #     # }
-    #     client = genai.Client(
-    #         api_key=os.environ["GEMINI_API_KEY"],
-    #         # model_name = model,
-    #         # generation_config=generation_config,
-    #     )
+    #     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    #     client = genai.GenerativeModel(model)
     #     return client, model
+
+    # Updated code
+    elif "gemini" in model:
+        print(f"Using Google Generative AI with model {model}.")
+        # genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+        # generation_config = {
+        # "temperature": 1,
+        # "top_p": 0.95,
+        # "top_k": 40,
+        # "max_output_tokens": 8192,
+        # "response_mime_type": "text/plain",
+        # }
+        client = genai.Client(
+            api_key=os.environ["GEMINI_API_KEY"],
+            # model_name = model,
+            # generation_config=generation_config,
+        )
+        return client, model
     else:
         raise ValueError(f"Model {model} not supported.")

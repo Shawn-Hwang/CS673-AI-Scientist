@@ -44,8 +44,8 @@ def parse_arguments():
     parser.add_argument(
         "--model",
         type=str,
-        # default="gemini-2.0-flash",
-        default="gemini-1.5-flash",
+        default="gemini-2.0-flash",
+        # default="gemini-1.5-flash",
         choices=AVAILABLE_LLMS,
         help="Model to use for AI Scientist.",
     )
@@ -132,8 +132,7 @@ if __name__ == "__main__":
         )
         novel_ideas = [idea for idea in ideas if idea["novel"]]
     
-    # We don't need to save it here because the generate_ideas() function already handles that
-    # with open(osp.join(base_dir, "ideas.json"), "w") as f:
-    #     json.dump(ideas, f, indent=4)
+    with open(osp.join(base_dir, "ideas.json"), "w") as f:
+        json.dump(ideas, f, indent=4)
 
     
