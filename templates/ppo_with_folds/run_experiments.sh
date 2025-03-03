@@ -14,4 +14,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module load texlive
-python -u experiment.py --out_dir not_a_run
+python -u experiment.py --out_dir cartpole_run_tanh --env_id CartPole-v1

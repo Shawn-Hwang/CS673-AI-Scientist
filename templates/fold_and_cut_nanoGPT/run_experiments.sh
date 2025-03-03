@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=03:00:00   # walltime
+#SBATCH --time=02:00:00   # walltime
 #SBATCH --ntasks=1   # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --gpus=1
@@ -15,5 +15,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module load texlive
-python experiment.py --out_dir run_0
-python plot.py
+python experiment.py --out_dir run_0_folds
+# python plot.py

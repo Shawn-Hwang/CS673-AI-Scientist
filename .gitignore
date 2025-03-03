@@ -179,4 +179,5 @@ logs/
 *.err
 
 # no fold runs
-no_fold_run/
+*run/
+cartpole*/

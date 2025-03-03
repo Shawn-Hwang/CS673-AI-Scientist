@@ -6,12 +6,19 @@ from scipy.stats import bootstrap
 import seaborn as sns
 
 
-env = "LunarLander-v3"
+env = "CartPole-v1"
 
 # CREATE LEGEND -- ADD RUNS HERE THAT WILL BE PLOTTED
+# labels = {
+#     "run_0": "Folds and Tanh",
+#     "no_fold_run": "No Folds",
+#     "relu_run": "Folds and ReLU"
+# }
+
 labels = {
-    "run_0": "Folds Baseline",
-    "run_1": "No Folds",
+    "cartpole_run_relu": "Folds and ReLU",
+    "cartpole_run_no_fold": "No Folds",
+    "cartpole_run_tanh": "Folds and Tanh"
 }
 
 # create the figure and axes for 2 x 2 subplots
@@ -19,20 +26,21 @@ fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 
 folders = os.listdir("./")
 for folder in folders:
-    if folder.startswith("run") and os.path.isdir(folder): 
+    if (folder in labels.keys()) and os.path.isdir(folder): 
         rewards = []
         grad_norms = []
         grad_vars = []
         param_norms = []
         for run in os.listdir(folder):
+            # if '__5__' not in run : 
             ea = event_accumulator.EventAccumulator(os.path.join(folder, run))
             ea.Reload()
 
             # get rewards
-            # print(folder+'/'+run)
-            # episodic_return = ea.Scalars('charts/episodic_return')
-            # reward_steps = [e.step for e in episodic_return]
-            # rewards.append([e.value for e in episodic_return])
+            print(folder+'/'+run)
+            episodic_return = ea.Scalars('charts/episodic_return')
+            reward_steps = [e.step for e in episodic_return]
+            rewards.append([e.value for e in episodic_return])
 
             # get grad norms
             grad_norms_single_run = ea.Scalars('gradients/norm_together')
@@ -47,9 +55,16 @@ for folder in folders:
             param_norms_single_run = ea.Scalars('parameters/norm')
             param_norms.append([e.value for e in param_norms_single_run])
 
-        # res = bootstrap((np.array(rewards),), np.mean)
-        # axs[0,0].plot(reward_steps, np.mean(np.array(rewards), axis=0), label=labels[folder])
-        # axs[0,0].fill_between(reward_steps, res.confidence_interval.low, res.confidence_interval.high, alpha=0.25)
+        rewards = [run[:min([len(a) for a in rewards])] for run in rewards]
+        reward_steps = reward_steps[:min([len(a) for a in rewards])]
+        grad_norms = [run[:min([len(a) for a in grad_norms])] for run in grad_norms]
+        grad_and_param_steps = grad_and_param_steps[:min([len(a) for a in grad_norms])]
+        grad_vars = [run[:min([len(a) for a in grad_vars])] for run in grad_vars]
+        param_norms = [run[:min([len(a) for a in param_norms])] for run in param_norms]
+        
+        res = bootstrap((np.array(rewards),), np.mean)
+        axs[0,0].plot(reward_steps, np.mean(np.array(rewards), axis=0), label=labels[folder])
+        axs[0,0].fill_between(reward_steps, res.confidence_interval.low, res.confidence_interval.high, alpha=0.25)
 
         res = bootstrap((np.array(grad_norms),), np.mean)
         axs[0,1].plot(grad_and_param_steps, np.mean(np.array(grad_norms), axis=0), label=labels[folder])
@@ -64,9 +79,9 @@ for folder in folders:
         axs[1,1].fill_between(grad_and_param_steps, res.confidence_interval.low, res.confidence_interval.high, alpha=0.25)
 
 # Set the labels and title
-# axs[0,0].set_xlabel('Steps')
-# axs[0,0].set_ylabel('Reward')
-# axs[0,0].set_title('Reward')
+axs[0,0].set_xlabel('Steps')
+axs[0,0].set_ylabel('Reward')
+axs[0,0].set_title('Reward')
 axs[0,1].set_xlabel('Steps')
 axs[0,1].set_ylabel('Gradient Norm')
 axs[0,1].set_title('Gradient Norm')
@@ -81,5 +96,5 @@ axs[1,1].set_title('Parameter Norm')
 # axs[0,0].legend()
 axs[0,1].legend()
 plt.tight_layout()
-plt.savefig(f"{env}_metrics.png")
+plt.savefig(f"{env}.png")
 plt.close()

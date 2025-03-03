@@ -515,7 +515,7 @@ def train(dataset="shakespeare_char", out_dir="run_0", seed_offset=0):
     )
 
     # poor man's data loader
-    if out_dir == "run_0":
+    if "run_0" in out_dir:
         data_dir = os.path.join("../../data", dataset)
     else:
         data_dir = os.path.join("../../../data", dataset)

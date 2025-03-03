@@ -191,19 +191,19 @@ class Agent(nn.Module):
         self.critic = nn.Sequential(
             layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
             nn.Tanh(),
-            # SoftFold(64),
+            SoftFold(64),
             layer_init(nn.Linear(64, 64)),
             nn.Tanh(),
-            # SoftFold(64),
+            SoftFold(64),
             layer_init(nn.Linear(64, 1), std=1.0),
         )
         self.actor = nn.Sequential(
             layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),
             nn.Tanh(),
-            # SoftFold(64),
+            SoftFold(64),
             layer_init(nn.Linear(64, 64)),
             nn.Tanh(),
-            # SoftFold(64),
+            SoftFold(64),
             layer_init(nn.Linear(64, envs.single_action_space.n), std=0.01),
         )
 
@@ -299,12 +299,15 @@ def run_experiment(args, seed):
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(next_done).to(device)
 
-            if "final_info" in infos:
-                for info in infos["final_info"]:
-                    if info and "episode" in info:
-                        print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
-                        writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
-                        writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
+            # Debugging prints
+            if "episode" in infos:
+                for i in range(len(infos["episode"]["_r"])):
+                    if infos["episode"]["_r"][i]:
+                        episodic_return = infos["episode"]["r"][i]
+                        episodic_length = infos["episode"]["l"][i]
+                        print(f"global_step={global_step}, episodic_return={episodic_return}")
+                        writer.add_scalar("charts/episodic_return", episodic_return, global_step)
+                        writer.add_scalar("charts/episodic_length", episodic_length, global_step)
 
         # bootstrap value if not done
         with torch.no_grad():
@@ -425,7 +428,7 @@ def run_experiment(args, seed):
 if __name__ == "__main__":
     args = tyro.cli(Args)
 
-    seeds = range(1, 11) # run the experiment with 10 different seeds
+    seeds = range(1, 6) # run the experiment with 5 different seeds
     
     # Create a partial function with fixed base args
     partial_experiment = partial(run_experiment, args)
