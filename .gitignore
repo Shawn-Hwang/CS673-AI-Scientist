@@ -1,3 +1,6 @@
+# API keys
+gemini_api_key.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -181,3 +184,7 @@ logs/
 # no fold runs
 *run/
 cartpole*/
+
+# install tl stuff
+install-tl-unx.tar.gz
+install-tl-20*/
