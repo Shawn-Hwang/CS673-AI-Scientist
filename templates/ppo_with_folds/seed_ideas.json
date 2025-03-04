@@ -1,0 +1,18 @@
+[
+    {
+      "Name": "fold_specific_learning_rates",
+      "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+      "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+      "Interestingness": 5,
+      "Feasibility": 5,
+      "Novelty": 3
+    },
+    {
+      "Name": "fold_then_relu",
+      "Title": "Fold before Activation: Improving MLP networks in PPO with a new Non-linear Layer",
+      "Experiment": "Experiment with using the soft fold layer before instead of after the activation function. Compare the agent performance.",
+      "Interestingness": 2,
+      "Feasibility": 9,
+      "Novelty": 2
+    }
+]
