@@ -11,8 +11,8 @@ from ai_scientist.llm import get_response_from_llm, extract_json_between_markers
 
 S2_API_KEY = os.getenv("S2_API_KEY")
 def sort_ideas(
-        idea_1: tuple[str, int],
-        idea_2: tuple[str, int],
+        idea_1: tuple[str, any],
+        idea_2: tuple[str, any],
         client,
         model
 ):
