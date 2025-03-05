@@ -73,7 +73,6 @@ for folder in folders:
 # CREATE LEGEND -- ADD RUNS HERE THAT WILL BE PLOTTED
 labels = {
     "run_0": "Baselines",
-    "run_1": "With Folds"
 }
 
 

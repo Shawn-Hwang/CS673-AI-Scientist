@@ -175,3 +175,16 @@ ICLR2022-OpenReviewData/
 templates/*/run_0/
 templates/*/*.png
 results/*
+
+# logs
+logs/
+*.out
+*.err
+
+# no fold runs
+*run/
+cartpole*/
+
+# install tl stuff
+install-tl-unx.tar.gz
+install-tl-20*/
