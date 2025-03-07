@@ -1,0 +1,13 @@
+idea_id,combined_score
+input_dependent_hyperplane_combination,24
+input_dependent_hyperplane,23
+principal_component_alignment,23
+multiple_hyperplanes,22
+affine_prefolding,22
+batchnorm_aware_softfold,22
+spectral_normalized_softfold,22
+distance_dependent_folding,22
+selective_folding_with_gating,21
+learnable_folding_function,19
+fold_specific_learning_rates,13
+fold_then_relu,13
