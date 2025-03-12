@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1   # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --mem-per-cpu=32768M   # memory per CPU core
-#SBATCH -J "fold_nanogpt"   # job name
+#SBATCH -J "fold_ppo"   # job name
 #SBATCH --output=logs/%A_output.out
 #SBATCH --error=logs/%A_errors.err
 
@@ -14,4 +14,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module load texlive
-python -u experiment.py --out_dir cartpole_run_tanh --env_id CartPole-v1
+python -u experiment.py --out_dir run_0

@@ -19,6 +19,10 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 import multiprocessing
 from functools import partial
+import json
+import time
+import pandas as pd
+from scipy.stats import bootstrap
 
 
 @dataclass
@@ -29,7 +33,7 @@ class Args:
     """seed of the experiment"""
     torch_deterministic: bool = True
     """if toggled, `torch.backends.cudnn.deterministic=False`"""
-    cuda: bool = False # changed from cleanrl
+    cuda: bool = False # changed from cleanrl 
     """if toggled, cuda will be enabled by default"""
     track: bool = False
     """if toggled, this experiment will be tracked with Weights and Biases"""
@@ -242,6 +246,13 @@ def run_experiment(args, seed):
         "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
     )
 
+    # experiment logging metrics
+    rewards_across_episodes = []
+    reward_steps = []
+    gradient_norms = []
+    gradient_vars = []
+    parameter_norms = []
+
     # TRY NOT TO MODIFY: seeding
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -308,6 +319,8 @@ def run_experiment(args, seed):
                         print(f"global_step={global_step}, episodic_return={episodic_return}")
                         writer.add_scalar("charts/episodic_return", episodic_return, global_step)
                         writer.add_scalar("charts/episodic_length", episodic_length, global_step)
+                        rewards_across_episodes.append(episodic_return)
+                        reward_steps.append(global_step)
 
         # bootstrap value if not done
         with torch.no_grad():
@@ -389,8 +402,12 @@ def run_experiment(args, seed):
                 params = []
                 for name, param in agent.named_parameters():
                     if (param.grad is not None) and (("weight" in name) or ("bias" in name)):
-                        grad.extend(list(param.grad.numpy().flatten()))
-                        params.extend(list(param.detach().numpy().flatten()))
+                        if args.cuda : 
+                            grad.extend(list(param.grad.cpu().numpy().flatten()))
+                            params.extend(list(param.detach().cpu().numpy().flatten()))
+                        else : 
+                            grad.extend(list(param.grad.numpy().flatten()))
+                            params.extend(list(param.detach().numpy().flatten()))
                         if (param.numel() > 1) : 
                             grad_norms.append(param.grad.norm().item())
                             grad_vars.append(param.grad.var().item())
@@ -399,6 +416,9 @@ def run_experiment(args, seed):
                 writer.add_scalar("gradients/norm_together", np.linalg.norm(np.array(grad)), global_step)
                 writer.add_scalar("gradients/variance_together", np.var(np.array(grad)), global_step)
                 writer.add_scalar("parameters/norm", np.linalg.norm(np.array(params)), global_step)
+                gradient_norms.append(np.linalg.norm(np.array(grad)))
+                gradient_vars.append(np.var(np.array(grad)))
+                parameter_norms.append(np.linalg.norm(np.array(params)))
 
                 nn.utils.clip_grad_norm_(agent.parameters(), args.max_grad_norm)
                 optimizer.step()
@@ -425,8 +445,25 @@ def run_experiment(args, seed):
     envs.close()
     writer.close()
 
+    df = pd.DataFrame({'step': reward_steps, 'reward': rewards_across_episodes})
+    grouped_df = df.groupby('step')['reward'].mean().reset_index()
+    reward_steps = grouped_df['step'].to_numpy()
+    rewards_across_episodes = grouped_df['reward'].to_numpy()
+
+    results = {}
+
+    indices = np.searchsorted(reward_steps, np.arange(200, 475001, 100), side='right') - 1
+    indices[indices < 0] = 0
+    results['reward'] = np.mean(rewards_across_episodes[indices])
+    results['grad_norm'] = np.mean(gradient_norms)
+    results['grad_var'] = np.mean(gradient_vars)
+    results['param_norm'] = np.mean(parameter_norms)
+    return results
+
 if __name__ == "__main__":
     args = tyro.cli(Args)
+
+    start = time.time()
 
     seeds = range(1, 6) # run the experiment with 5 different seeds
     
@@ -436,4 +473,26 @@ if __name__ == "__main__":
     # Create a pool of workers
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         # Map the experiment function to different seeds
-        pool.map(partial_experiment, seeds)
+        results_list = pool.map(partial_experiment, seeds)
+
+    # Aggregate the results
+    aggregated_results = {}
+    for result in results_list:
+        for key, value in result.items():
+            if key in aggregated_results:
+                aggregated_results[key].append(value)
+            else:
+                aggregated_results[key] = [value]
+
+    res = bootstrap((np.array(aggregated_results['reward']),), np.mean)
+    aggregated_results['reward_low'] = res.confidence_interval.low.item()
+    aggregated_results['reward_high'] = res.confidence_interval.high.item()
+
+    for key, values in aggregated_results.items():
+        aggregated_results[key] = np.mean(values).item() 
+
+    # write the results to a json 
+    with open(f"{args.out_dir}/final_info.json", "w") as f:
+        json.dump(aggregated_results, f)
+
+    print('total time taken:', time.time() - start)
