@@ -128,8 +128,8 @@ def do_idea(
         log_file=False,
 ):
     ## CREATE PROJECT FOLDER
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    idea_name = f"{timestamp}_{idea['Name']}"
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    idea_name = idea['Name']
     folder_name = osp.join(results_dir, idea_name)
     assert not osp.exists(folder_name), f"Folder {folder_name} already exists."
     destination_dir = folder_name
