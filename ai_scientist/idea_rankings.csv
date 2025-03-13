@@ -1,0 +1,13 @@
+idea_id,elo_rating
+input_dependent_hyperplane_combination,1543.794673259126
+selective_folding_with_gating,1491.2027175905905
+spectral_normalized_softfold,1485.5474076359171
+batchnorm_aware_softfold,1467.333482700835
+input_dependent_hyperplane,1464.7074425126211
+principal_component_alignment,1385.5501341139163
+learnable_folding_function,1362.4161109600561
+multiple_hyperplanes,1361.595641563354
+affine_prefolding,1341.7215949971724
+distance_dependent_folding,1329.297778760284
+fold_specific_learning_rates,1284.2793409147707
+fold_then_relu,1282.5536749913565
