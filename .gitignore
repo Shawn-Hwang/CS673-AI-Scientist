@@ -187,3 +187,6 @@ logs/
 # install tl stuff
 install-tl-unx.tar.gz
 install-tl-20*/
+
+# playground notebooks
+test.ipynb
