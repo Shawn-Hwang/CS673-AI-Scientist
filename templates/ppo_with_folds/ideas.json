@@ -18,6 +18,15 @@
         "novel": false
     },
     {
+        "Name": "svd_alignment",
+        "Title": "SVD-based Initialization for Soft Fold Layers: Enhancing Feature Space Transformation in PPO",
+        "Experiment": "Modify the initialization of the normal vector 'n' in each SoftFold layer to be the u vector corresponding to the largest singular value in the SVD of the weight matrix of the linear layer preceding the SoftFold layer.",
+        "Interestingness": 6,
+        "Feasibility": 6,
+        "Novelty": 5,
+        "novel": true
+    },
+    {
         "Name": "learnable_folding_function",
         "Title": "Adaptive Folding Functions: Enhancing Soft Fold Layers with Learnable Piecewise Linear Transformations in PPO",
         "Experiment": "Replace the sigmoid function in the SoftFold layer with a learnable piecewise linear function. The piecewise linear function will be defined by a fixed number of learnable breakpoints and slopes. Implement the piecewise linear function within the SoftFold class. Experiment with different numbers of breakpoints (e.g., 3, 5, 7). Compare the training dynamics, convergence speed, and final performance with the baseline model using the sigmoid folding function.",

@@ -1,0 +1,854 @@
+Okay, this is a complex project, but I'll break it down into manageable parts, focusing on implementing the core agents and the overall framework described in the paper.  I will use Python.
+
+**Project Structure:**
+
+```
+ai_coscientist/
+├── agents/
+│   ├── generation_agent.py
+│   ├── reflection_agent.py
+│   ├── ranking_agent.py
+│   ├── proximity_agent.py
+│   ├── evolution_agent.py
+│   └── meta_review_agent.py
+├── core/
+│   ├── supervisor.py
+│   ├── context_memory.py
+│   └── tournament.py
+├── templates/
+│   └── experiment_name/
+│       └── experiment.py
+├── utils/
+│   ├── llm_utils.py
+│   └── data_utils.py
+├── main.py
+└── requirements.txt
+```
+
+**requirements.txt:**
+
+```
+openai
+python-dotenv
+networkx
+scipy
+tqdm
+```
+
+**1. `utils/llm_utils.py`:**
+
+```python
+import os
+from dotenv import load_dotenv
+import openai
+
+load_dotenv()
+
+# Initialize OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def generate_response(prompt, model="gpt-4", temperature=0.7, max_tokens=500):
+    """
+    Generates a text response from a language model.
+
+    Args:
+        prompt (str): The prompt to send to the language model.
+        model (str): The name of the language model to use.
+        temperature (float): Controls randomness (higher = more random).
+        max_tokens (int): The maximum number of tokens in the response.
+
+    Returns:
+        str: The generated text response, or None if an error occurred.
+    """
+    try:
+        response = openai.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        return None
+
+def summarize_text(text, model="gpt-3.5-turbo", max_tokens=300):
+    """Summarizes a given text using a language model."""
+    prompt = f"Summarize the following text:\n{text}\n\nSummary:"
+    return generate_response(prompt, model=model, max_tokens=max_tokens)
+```
+
+**2. `utils/data_utils.py`:**
+
+```python
+import json
+import os
+
+def load_experiment_code(experiment_name):
+    """Loads the code from the experiment.py file."""
+    filepath = os.path.join("templates", experiment_name, "experiment.py")
+    try:
+        with open(filepath, "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"Error: experiment.py not found for experiment '{experiment_name}'")
+        return None
+    except Exception as e:
+        print(f"Error loading experiment code: {e}")
+        return None
+
+def load_ideas(experiment_name):
+    """Loads existing ideas from ideas.json, if it exists."""
+    filepath = os.path.join("templates", experiment_name, "ideas.json")
+    try:
+        with open(filepath, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []  # No existing ideas
+    except json.JSONDecodeError:
+        print("Error: Invalid JSON in ideas.json.  Starting with an empty list.")
+        return []
+    except Exception as e:
+        print(f"Error loading ideas: {e}")
+        return []
+
+def save_ideas(experiment_name, ideas):
+    """Saves the ideas to a JSON file."""
+    filepath = os.path.join("templates", experiment_name, "ideas.json")
+    try:
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
+        with open(filepath, "w") as f:
+            json.dump(ideas, f, indent=4)
+        print(f"Ideas saved to {filepath}")
+    except Exception as e:
+        print(f"Error saving ideas: {e}")
+
+def create_idea_template():
+    """Returns a template for a new idea."""
+    return {
+        "Name": "",
+        "Title": "",
+        "Experiment": "",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 5,
+        "ELO rating": 1200,
+        "Notes": ""
+    }
+```
+
+**3. `core/context_memory.py`:**
+
+```python
+class ContextMemory:
+    """
+    Stores and retrieves the state of the AI co-scientist system.
+    This is a simplified in-memory implementation.  A real implementation
+    would use a database or file system.
+    """
+    def __init__(self):
+        self.memory = {}
+
+    def store(self, key, data):
+        """Stores data in the context memory."""
+        self.memory[key] = data
+
+    def retrieve(self, key):
+        """Retrieves data from the context memory."""
+        return self.memory.get(key)
+
+    def clear(self):
+        """Clears the context memory."""
+        self.memory = {}
+```
+
+**4. `core/tournament.py`:**
+
+```python
+import trueskill
+import random
+
+class Tournament:
+    """
+    Manages the Elo-based tournament for ranking hypotheses.
+    Uses the TrueSkill algorithm for more robust ranking.
+    """
+
+    def __init__(self, initial_rating=1200, mu=25.0, sigma=8.333, beta=250.0, tau=8.333/100, draw_probability=0.0):
+        self.env = trueskill.TrueSkill(mu=mu, sigma=sigma, beta=beta, tau=tau, draw_probability=draw_probability)
+        self.ratings = {}  # Store ratings (TrueSkill objects)
+        self.initial_rating_value = initial_rating
+
+    def add_idea(self, idea_name):
+        """Adds a new idea to the tournament with an initial rating."""
+        if idea_name not in self.ratings:
+            self.ratings[idea_name] = self.env.Rating(mu=self.env.mu, sigma=self.env.sigma)
+
+    def get_rating(self, idea_name):
+        """Returns the rating (TrueSkill object) for an idea."""
+        return self.ratings.get(idea_name)
+
+    def get_elo_rating(self, idea_name):
+        """Returns the approximate ELO rating for an idea."""
+        rating = self.get_rating(idea_name)
+        if rating:
+            return self.env.expose(rating)
+        else:
+            return None
+
+    def conduct_match(self, idea1_name, idea2_name, winner=None):
+        """
+        Conducts a match between two ideas and updates their ratings.
+
+        Args:
+            idea1_name (str): Name of the first idea.
+            idea2_name (str): Name of the second idea.
+            winner (str):  'idea1', 'idea2', or 'draw'.  None if the match hasn't happened.
+        """
+        if idea1_name not in self.ratings or idea2_name not in self.ratings:
+            raise ValueError("One or both ideas not found in the tournament.")
+
+        rating1 = self.ratings[idea1_name]
+        rating2 = self.ratings[idea2_name]
+
+        if winner == 'idea1':
+            new_rating1, new_rating2 = self.env.rate_1vs1(rating1, rating2)
+        elif winner == 'idea2':
+            new_rating2, new_rating1 = self.env.rate_1vs1(rating2, rating1)
+        elif winner == 'draw':
+            new_rating1, new_rating2 = self.env.rate_1vs1(rating1, rating2, drawn=True)
+        else:
+            return  # No update if there's no winner
+
+        self.ratings[idea1_name] = new_rating1
+        self.ratings[idea2_name] = new_rating2
+
+    def get_ranked_ideas(self):
+        """Returns a list of ideas ranked by their Elo rating (descending)."""
+        ranked_ideas = sorted(self.ratings.items(), key=lambda item: self.env.expose(item[1]), reverse=True)
+        return ranked_ideas
+
+    def choose_match(self, ideas, proximity_graph=None):
+        """
+        Chooses a match between two ideas based on proximity and ranking.
+
+        Args:
+            ideas (list): A list of idea names to choose from.
+            proximity_graph (networkx.Graph): A graph representing the similarity between ideas.
+
+        Returns:
+            tuple: A tuple containing the names of the two ideas to match, or None if no match can be found.
+        """
+        if len(ideas) < 2:
+            return None
+
+        # Prioritize matches between similar ideas based on the proximity graph
+        if proximity_graph:
+            for _ in range(10):  # Try a few times to find a good match
+                idea1 = random.choice(ideas)
+                neighbors = list(proximity_graph.neighbors(idea1))
+                if neighbors:
+                    idea2 = random.choice(neighbors)
+                    if idea2 in ideas:
+                        return idea1, idea2
+
+        # If no similar ideas are found, choose two random ideas
+        idea1 = random.choice(ideas)
+        ideas_without_idea1 = [idea for idea in ideas if idea != idea1]
+        if ideas_without_idea1:
+            idea2 = random.choice(ideas_without_idea1)
+            return idea1, idea2
+        else:
+            return None
+```
+
+**5. `agents/generation_agent.py`:**
+
+```python
+from utils.llm_utils import generate_response, summarize_text
+from utils.data_utils import create_idea_template
+
+class GenerationAgent:
+    """
+    Generates novel research hypotheses and proposals.
+    """
+
+    def __init__(self, experiment_code, research_goal=None, skip_lit_review=False):
+        self.experiment_code = experiment_code
+        self.research_goal = research_goal
+        self.skip_lit_review = skip_lit_review
+
+    def generate_ideas(self, num_ideas=3):
+        """Generates a list of research ideas."""
+        ideas = []
+        for i in range(num_ideas):
+            idea = self._generate_single_idea(i + 1)
+            if idea:
+                ideas.append(idea)
+        return ideas
+
+    def _generate_single_idea(self, idea_num):
+        """Generates a single research idea."""
+        idea = create_idea_template()
+        idea["Name"] = f"idea_{idea_num}"
+
+        prompt = f"""
+        You are a creative machine learning researcher.
+        Your goal is to generate novel ideas for modifying the following experiment code
+        to improve its performance or explore new research directions.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        """
+
+        if self.research_goal:
+            prompt += f"The scientist has provided the following research goal: {self.research_goal}\n"
+
+        if not self.skip_lit_review:
+            prompt += "First, explore relevant literature using web search and summarize prior work.  Focus on recent advances related to this code.\n"
+        else:
+            prompt += "Skip the literature review step.\n"
+
+        prompt += f"""
+        Now, generate a novel idea for modifying the experiment.
+        Give the idea a title in the style of a research paper title.
+        Explain the idea in detail, including how to implement it by modifying the experiment.py code.
+        Also, give the idea an interestingness score between 1 and 10, a feasibility score between 1 and 10,
+        and a novelty score between 1 and 10.  Explain your reasoning for these scores in the notes.
+
+        Format your output as a JSON object in the following format:
+        {{
+            "Title": "A title for the idea in the style of the title of a research paper",
+            "Experiment": "Explain the idea and how to implement it",
+            "Interestingness": 5,
+            "Feasibility": 5,
+            "Novelty": 5,
+            "Notes": "Give additional thoughts about the idea and justification for why it was decided on"
+        }}
+        """
+
+        response = generate_response(prompt, model="gpt-4", max_tokens=1000)
+        if response:
+            try:
+                import json
+                idea_details = json.loads(response)
+                idea["Title"] = idea_details.get("Title", "")
+                idea["Experiment"] = idea_details.get("Experiment", "")
+                idea["Interestingness"] = idea_details.get("Interestingness", 5)
+                idea["Feasibility"] = idea_details.get("Feasibility", 5)
+                idea["Novelty"] = idea_details.get("Novelty", 5)
+                idea["Notes"] = idea_details.get("Notes", "")
+                return idea
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON response: {response}")
+                return None
+        else:
+            return None
+```
+
+**6. `agents/reflection_agent.py`:**
+
+```python
+from utils.llm_utils import generate_response
+
+class ReflectionAgent:
+    """
+    Critically examines the correctness, quality, and novelty of generated hypotheses.
+    """
+
+    def __init__(self, experiment_code):
+        self.experiment_code = experiment_code
+
+    def review_idea(self, idea):
+        """Reviews a single idea."""
+        print(f"Reviewing idea: {idea['Name']}")
+
+        # Initial Review
+        initial_review = self._initial_review(idea)
+        print(f"Initial Review: {initial_review}")
+        if "reject" in initial_review.lower():
+            idea["Notes"] += f"\nRejected after initial review: {initial_review}"
+            return idea
+
+        # Full Review
+        full_review = self._full_review(idea)
+        idea["Notes"] += f"\nFull Review: {full_review}"
+
+        # Deep Verification Review
+        deep_verification_review = self._deep_verification_review(idea)
+        idea["Notes"] += f"\nDeep Verification Review: {deep_verification_review}"
+
+        # Observation Review (simplified)
+        observation_review = self._observation_review(idea)
+        idea["Notes"] += f"\nObservation Review: {observation_review}"
+
+        # Simulation Review (simplified)
+        simulation_review = self._simulation_review(idea)
+        idea["Notes"] += f"\nSimulation Review: {simulation_review}"
+
+        return idea
+
+    def _initial_review(self, idea):
+        """Performs an initial review assessing correctness, quality, and novelty."""
+        prompt = f"""
+        You are a scientific peer reviewer.  Critically examine the following research idea for correctness, quality, and novelty.
+        If the idea has obvious flaws, is not novel, or is clearly unsuitable, reject it.
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+
+        Based on your initial review, is this idea worth pursuing?  Explain your reasoning.
+        Answer 'Reject' if the idea should be rejected.
+        """
+        return generate_response(prompt, model="gpt-3.5-turbo", max_tokens=300)
+
+    def _full_review(self, idea):
+        """Performs a full review, leveraging external tools and web searches."""
+        prompt = f"""
+        You are a scientific peer reviewer conducting a full review.
+        Critically examine the following research idea for correctness, quality, and novelty, using literature search.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+
+        Provide a detailed review, summarizing known aspects of the hypothesis and judging its novelty based on existing literature.
+        """
+        return generate_response(prompt, model="gpt-4", max_tokens=500)
+
+    def _deep_verification_review(self, idea):
+        """Conducts a deep verification review, decomposing the hypothesis into constituent assumptions."""
+        prompt = f"""
+        You are a scientific peer reviewer conducting a deep verification review.
+        Decompose the following research idea into its constituent assumptions.
+        Break down each assumption into fundamental sub-assumptions and independently evaluate them for correctness.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+
+        Summarize any reasons for potential hypothesis invalidation due to incorrect assumptions.
+        """
+        return generate_response(prompt, model="gpt-4", max_tokens=500)
+
+    def _observation_review(self, idea):
+        """Explores whether the hypothesis can account for long-tail observations from prior experimental results."""
+        prompt = f"""
+        You are a scientific peer reviewer.
+        Explore whether the following research idea can account for long-tail observations from prior experimental results.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+
+        Assess if the hypothesis is a superior explanation over existing ones, assuming its validity.
+        """
+        return generate_response(prompt, model="gpt-3.5-turbo", max_tokens=300)
+
+    def _simulation_review(self, idea):
+        """Reviews the hypothesis by simulating it in a step-wise fashion."""
+        prompt = f"""
+        You are a scientific peer reviewer.
+        Review the following research idea by simulating it in a step-wise fashion.
+        Identify and summarize potential failure scenarios.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+        """
+        return generate_response(prompt, model="gpt-3.5-turbo", max_tokens=300)
+```
+
+**7. `agents/ranking_agent.py`:**
+
+```python
+from utils.llm_utils import generate_response
+
+class RankingAgent:
+    """
+    Uses an Elo-based tournament to automatically evaluate and rank hypotheses.
+    """
+
+    def __init__(self, experiment_code):
+        self.experiment_code = experiment_code
+
+    def conduct_debate(self, idea1, idea2):
+        """Conducts a simulated scientific debate between two ideas."""
+        prompt = f"""
+        You are a moderator in a scientific debate between two research ideas.
+        Your goal is to determine which idea is better based on novelty, correctness, and testability.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is idea 1:
+        Title: {idea1['Title']}
+        Experiment: {idea1['Experiment']}
+
+        Here is idea 2:
+        Title: {idea2['Title']}
+        Experiment: {idea2['Experiment']}
+
+        Engage in a multi-turn scientific debate, probing the strengths and weaknesses of each idea.
+        Conclude with a decision regarding which hypothesis is better.
+        Answer with "idea1", "idea2", or "draw".
+        """
+        return generate_response(prompt, model="gpt-4", max_tokens=500)
+```
+
+**8. `agents/proximity_agent.py`:**
+
+```python
+import networkx as nx
+from utils.llm_utils import generate_response
+
+class ProximityAgent:
+    """
+    Calculates the similarity between research hypotheses and proposals and builds a proximity graph.
+    """
+
+    def __init__(self):
+        self.graph = nx.Graph()
+
+    def build_graph(self, ideas):
+        """Builds a proximity graph based on the similarity between ideas."""
+        for i in range(len(ideas)):
+            for j in range(i + 1, len(ideas)):
+                idea1 = ideas[i]
+                idea2 = ideas[j]
+                similarity = self._calculate_similarity(idea1, idea2)
+                if similarity > 0.7:  # Threshold for connecting ideas in the graph
+                    self.graph.add_edge(idea1["Name"], idea2["Name"], weight=similarity)
+
+    def _calculate_similarity(self, idea1, idea2):
+        """Calculates the similarity between two ideas using a language model."""
+        prompt = f"""
+        You are a research assistant.
+        Calculate the similarity between the following two research ideas on a scale of 0 to 1.
+
+        Idea 1:
+        Title: {idea1['Title']}
+        Experiment: {idea1['Experiment']}
+
+        Idea 2:
+        Title: {idea2['Title']}
+        Experiment: {idea2['Experiment']}
+
+        Provide a similarity score between 0 and 1.  Explain your reasoning.
+        """
+        response = generate_response(prompt, model="gpt-3.5-turbo", max_tokens=200)
+        try:
+            similarity = float(response.split(":")[1].strip())  # Extract the similarity score
+            return similarity
+        except:
+            return 0.5
+```
+
+**9. `agents/evolution_agent.py`:**
+
+```python
+from utils.llm_utils import generate_response
+from utils.data_utils import create_idea_template
+
+class EvolutionAgent:
+    """
+    Continuously refines and improves existing hypotheses and proposals.
+    """
+
+    def __init__(self, experiment_code):
+        self.experiment_code = experiment_code
+
+    def evolve_idea(self, idea):
+        """Evolves a single idea."""
+        print(f"Evolving idea: {idea['Name']}")
+        evolved_idea = create_idea_template()
+        evolved_idea["Name"] = f"{idea['Name']}_evolved"
+
+        prompt = f"""
+        You are an experienced machine learning researcher.
+        Your goal is to refine and improve the following research idea.
+
+        Here is the experiment code:
+        ```python
+        {self.experiment_code}
+        ```
+
+        Here is the idea:
+        Title: {idea['Title']}
+        Experiment: {idea['Experiment']}
+
+        Suggest improvements to the idea, elaborate on details to fill reasoning gaps,
+        and address any potential weaknesses.
+        Generate a new idea based on the improved idea.
+
+        Format your output as a JSON object in the following format:
+        {{
+            "Title": "A title for the improved idea in the style of a research paper title",
+            "Experiment": "Explain the improved idea and how to implement it",
+            "Interestingness": 5,
+            "Feasibility": 5,
+            "Novelty": 5,
+            "Notes": "Give additional thoughts about the idea and justification for why it was decided on"
+        }}
+        """
+
+        response = generate_response(prompt, model="gpt-4", max_tokens=1000)
+        if response:
+            try:
+                import json
+                idea_details = json.loads(response)
+                evolved_idea["Title"] = idea_details.get("Title", "")
+                evolved_idea["Experiment"] = idea_details.get("Experiment", "")
+                evolved_idea["Interestingness"] = idea_details.get("Interestingness", 5)
+                evolved_idea["Feasibility"] = idea_details.get("Feasibility", 5)
+                evolved_idea["Novelty"] = idea_details.get("Novelty", 5)
+                evolved_idea["Notes"] = idea_details.get("Notes", "")
+                return evolved_idea
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON response: {response}")
+                return None
+        else:
+            return None
+```
+
+**10. `agents/meta_review_agent.py`:**
+
+```python
+from utils.llm_utils import generate_response
+
+class MetaReviewAgent:
+    """
+    Synthesizes insights from all reviews and tournament debates to optimize other agents' performance.
+    """
+
+    def __init__(self):
+        pass
+
+    def generate_meta_review(self, ideas):
+        """Generates a meta-review based on the reviews of the ideas."""
+        reviews = "\n".join([idea["Notes"] for idea in ideas])
+        prompt = f"""
+        You are a meta-reviewer. Synthesize insights from the following reviews to identify recurring patterns and common issues.
+
+        Reviews:
+        {reviews}
+
+        Provide a meta-review critique summarizing the common patterns and issues.
+        """
+        return generate_response(prompt, model="gpt-4", max_tokens=500)
+
+    def generate_research_overview(self, ideas):
+        """Generates a research overview based on the top-ranked hypotheses."""
+        top_ideas = sorted(ideas, key=lambda x: x["ELO rating"], reverse=True)[:3]  # Get top 3 ideas
+        top_ideas_summary = "\n".join([f"{idea['Title']}: {idea['Experiment']}" for idea in top_ideas])
+
+        prompt = f"""
+        You are a research strategist. Synthesize the following top-ranked research ideas into a research overview,
+        providing a roadmap for future research.
+
+        Top Ideas:
+        {top_ideas_summary}
+
+        Outline potential research areas and directions relevant to the research goal, justifying their importance
+        and suggesting specific experiments within each.
+        """
+        return generate_response(prompt, model="gpt-4", max_tokens=500)
+```
+
+**11. `core/supervisor.py`:**
+
+```python
+from agents.generation_agent import GenerationAgent
+from agents.reflection_agent import ReflectionAgent
+from agents.ranking_agent import RankingAgent
+from agents.proximity_agent import ProximityAgent
+from agents.evolution_agent import EvolutionAgent
+from agents.meta_review_agent import MetaReviewAgent
+from core.context_memory import ContextMemory
+from core.tournament import Tournament
+from utils.data_utils import load_ideas, save_ideas
+
+import networkx as nx
+import random
+from tqdm import tqdm  # For progress bars
+
+class Supervisor:
+    """
+    Orchestrates the AI co-scientist system.
+    """
+
+    def __init__(self, experiment_name, research_goal=None, num_ideas=5, skip_lit_review=False):
+        self.experiment_name = experiment_name
+        self.research_goal = research_goal
+        self.num_ideas = num_ideas
+        self.skip_lit_review = skip_lit_review
+        self.context_memory = ContextMemory()
+        self.experiment_code = self.load_experiment_code()
+        self.generation_agent = GenerationAgent(self.experiment_code, self.research_goal, self.skip_lit_review)
+        self.reflection_agent = ReflectionAgent(self.experiment_code)
+        self.ranking_agent = RankingAgent(self.experiment_code)
+        self.proximity_agent = ProximityAgent()
+        self.evolution_agent = EvolutionAgent(self.experiment_code)
+        self.meta_review_agent = MetaReviewAgent()
+        self.tournament = Tournament()
+        self.ideas = load_ideas(experiment_name)
+        self.proximity_graph = nx.Graph()
+
+        # Load existing ideas into the tournament
+        for idea in self.ideas:
+            self.tournament.add_idea(idea["Name"])
+            self.tournament.ratings[idea["Name"]] = self.tournament.env.Rating(mu=idea["ELO rating"] / 36.667 + self.tournament.env.mu, sigma=self.tournament.env.sigma)
+
+    def load_experiment_code(self):
+        """Loads the experiment code from the experiment.py file."""
+        from utils.data_utils import load_experiment_code
+        return load_experiment_code(self.experiment_name)
+
+    def run(self, iterations=3):
+        """Runs the AI co-scientist system for a specified number of iterations."""
+        for i in range(iterations):
+            print(f"Iteration {i + 1}/{iterations}")
+
+            # 1. Generate New Ideas
+            new_ideas = self.generation_agent.generate_ideas(num_ideas=self.num_ideas)
+            self.ideas.extend(new_ideas)
+            for idea in new_ideas:
+                self.tournament.add_idea(idea["Name"])
+
+            # 2. Review Ideas
+            for idea in tqdm(self.ideas, desc="Reviewing Ideas"):
+                if "Notes" not in idea:
+                    idea["Notes"] = ""
+                idea = self.reflection_agent.review_idea(idea)
+
+            # 3. Build Proximity Graph
+            self.proximity_agent.build_graph(self.ideas)
+            self.proximity_graph = self.proximity_agent.graph
+
+            # 4. Conduct Tournament Matches
+            num_matches = min(10, len(self.ideas) * (len(self.ideas) - 1) // 2) # Number of matches to run
+            for _ in tqdm(range(num_matches), desc="Conducting Tournament Matches"):
+                match = self.tournament.choose_match([idea["Name"] for idea in self.ideas], self.proximity_graph)
+                if match:
+                    idea1_name, idea2_name = match
+                    idea1 = next(idea for idea in self.ideas if idea["Name"] == idea1_name)
+                    idea2 = next(idea for idea in self.ideas if idea["Name"] == idea2_name)
+                    winner = self.ranking_agent.conduct_debate(idea1, idea2)
+
+                    self.tournament.conduct_match(idea1_name, idea2_name, winner)
+
+            # Update ELO ratings in ideas list
+            for idea in self.ideas:
+                idea["ELO rating"] = self.tournament.get_elo_rating(idea["Name"])
+
+            # 5. Evolve Top Ideas
+            ranked_ideas = sorted(self.ideas, key=lambda x: x["ELO rating"], reverse=True)
+            for idea in ranked_ideas[:2]:  # Evolve top 2 ideas
+                evolved_idea = self.evolution_agent.evolve_idea(idea)
+                if evolved_idea:
+                    self.ideas.append(evolved_idea)
+                    self.tournament.add_idea(evolved_idea["Name"])
+
+            # 6. Meta-Review
+            meta_review = self.meta_review_agent.generate_meta_review(self.ideas)
+            print(f"Meta-Review: {meta_review}")
+
+            research_overview = self.meta_review_agent.generate_research_overview(self.ideas)
+            print(f"Research Overview: {research_overview}")
+
+            # 7. Save Ideas
+            save_ideas(self.experiment_name, self.ideas)
+
+        print("AI Co-scientist run complete.")
+
+    def get_top_ideas(self, num_ideas):
+        """Returns the top-ranked ideas."""
+        ranked_ideas = sorted(self.ideas, key=lambda x: x["ELO rating"], reverse=True)
+        return ranked_ideas[:num_ideas]
+```
+
+**12. `main.py`:**
+
+```python
+import argparse
+from core.supervisor import Supervisor
+from utils.data_utils import load_experiment_code
+
+def main():
+    parser = argparse.ArgumentParser(description="AI Co-scientist for Machine Learning Research")
+    parser.add_argument("--experiment", required=True, help="The name of the experiment (directory in templates/)")
+    parser.add_argument("--num_ideas", type=int, default=5, help="Number of ideas to generate per iteration")
+    parser.add_argument("--skip_lit_review", action="store_true", help="Skip literature review steps")
+    parser.add_argument("--iterations", type=int, default=3, help="Number of iterations to run the co-scientist")
+    parser.add_argument("--research_goal", type=str, default=None, help="Optional research goal provided by the scientist")
+
+    args = parser.parse_args()
+
+    experiment_code = load_experiment_code(args.experiment)
+    if not experiment_code:
+        return
+
+    supervisor = Supervisor(
+        experiment_name=args.experiment,
+        research_goal=args.research_goal,
+        num_ideas=args.num_ideas,
+        skip_lit_review=args.skip_lit_review,
+    )
+    supervisor.run(iterations=args.iterations)
+
+    top_ideas = supervisor.get_top_ideas(args.num_ideas)
+    print("\nTop Ideas:")
+    for idea in top_ideas:
+        print(f"  - {idea['Title']} (ELO: {idea['ELO rating']})")
+
+if __name__ == "__main__":
+    main()
+```
+
+**Example Usage:**
+
+1.  **Set OpenAI API Key:**  Set the `OPENAI_API_KEY` environment variable.
+2.  **Create Experiment:**  Create a directory `templates/my_experiment/` and put your `experiment.py` file inside.
+3.  **Run:**
+
+```bash
+python main.py --experiment my_experiment --num_ideas 3 --iterations 2 --research_goal "Improve the accuracy of the model on a specific dataset."
+```
+
+**Important Considerations and Simplifications:**
+
+*   **Error Handling:**  The code includes basic error handling, but more robust error handling is needed for a production system.  Specifically, the parsing of the LLM responses needs to be more tolerant of formatting errors.
+*   **API Costs:**  Be mindful of OpenAI API costs, especially when running multiple iterations and generating many ideas.
+*   **Rate Limiting:** Implement rate limiting to avoid exceeding OpenAI API limits.
+*   **Asynchronous Execution:** The paper emphasizes asynchronous task execution. This implementation is synchronous for simplicity.  A production system should use `asyncio` or a similar framework for asynchronous execution.
+*   **Context Management:** The `ContextMemory` is a very basic in-memory implementation.  For longer runs, a persistent storage solution (database, file system) is necessary.
+*   **Prompt Engineering:** The prompts provided are starting points.  Experiment with different prompts to optimize the performance of each agent.  The prompts should be more tailored to the specific machine learning task.
+*   **Literature Review:** The literature review is currently a placeholder.  Implement a more sophisticated literature search using the OpenAI API or other search tools.  The `skip_lit_review` flag is useful for initial testing and development.
+*   **Proximity Graph:** The proximity graph calculation is simplified.  Consider using more sophisticated methods for calculating the similarity between ideas.
+*   **Tournament:**

@@ -10,7 +10,7 @@ from google import genai
 # from google.generativeai.types import GenerationConfig
 from google.genai.types import GenerateContentConfig
 
-MAX_NUM_TOKENS = 4096
+MAX_NUM_TOKENS = 50000
 
 AVAILABLE_LLMS = [
     # Anthropic models

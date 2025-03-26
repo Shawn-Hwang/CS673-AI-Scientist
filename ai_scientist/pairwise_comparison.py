@@ -14,42 +14,52 @@ def compare_two_ideas(
         idea_1: tuple[str, Any],
         idea_2: tuple[str, Any],
         client,
-        model
+        model, 
+        experiment
 ):
     evaluate_prompt = """
         You are an expert evaluator tasked with comparing two hypotheses.
-        Evaluate the two provided hypotheses (hypothesis 1 and hypothesis 2) and determine which one
-        is superior based on the specified quality, novelty, and feasibility.
+        Evaluate the two provided ideas (idea 1 and idea 2) 
+        for modifying and improving the following code: 
+            
+        <experiment.py>
+        {code}
+        </experiment.py>
+        Determine which idea is superior based on expected improvement in performance and efficiency.
 
-        Hypothesis 1:
-        {hypothesis_1}
+        Idea 1:
+        {idea_1}
 
-        Hypothesis 2:
-        {hypothesis_2}
+        Idea 2:
+        {idea_2}
 
-        First, generate a list of pro's and cons for each hypothesis regarding quality, novelty, and feasibility.
+        First, generate a list of reasons why each idea might increase or decrease performance and
+        reasons it might be considered efficient or inefficient.
         The format should be as follows:
 
-        ## Hypothesis 1:
-        Quality pros:
+        ## Idea 1:
+        Reasons for potential performance improvement:
         * ...
 
-        Quality cons:
+        Reasons for potential performance decrease:
         * ...
 
-        Feasibility pros:
+        Reasons for efficiency:
+        * ...
+
+        Reasons for inefficiency:
         * ...
 
         ...
 
-        ## Hypothesis 2:
-        Quality pros:
+        ## Idea 2:
+        Reasons for potential performance improvement:
         * ...
         ...
 
-        Last, concisely reason through which hypothesis is better. 
+        Last, concisely reason through which idea is better. 
 
-        End with "better hypothesis: <1 or 2>"
+        End with "better idea: <1 or 2>"
         """
     system_prompt = "You are a distinguished researcher in computer science, artificial intelligence, " \
                     "and deep learning with decades of experience evaluating research ideas. " \
@@ -58,8 +68,11 @@ def compare_two_ideas(
                     "Think methodically and provide balanced assessments as you would when reviewing for top conferences. " \
                     "Your evaluation should reflect the nuanced thinking of an elite researcher in the field."
 
+    with open(osp.join("templates", experiment, "experiment.py"), "r") as f:
+        code = f.read()
+
     text, msg_history = get_response_from_llm(
-        evaluate_prompt.format(hypothesis_1=idea_1[0], hypothesis_2=idea_2[0]),
+        evaluate_prompt.format(idea_1=idea_1[0], idea_2=idea_2[0], code=code),
         client=client,
         model=model,
         system_message=system_prompt

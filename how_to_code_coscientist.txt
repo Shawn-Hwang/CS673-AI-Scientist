@@ -1,0 +1,378 @@
+Okay, this is a complex task, but I'll break it down into manageable parts and create a multi-agent system based on the provided paper.  I'll focus on the core agents and their interactions, and make reasonable simplifications where necessary, given the limitations of a coding environment without direct access to Gemini 2.0 or a full research infrastructure.
+
+Here's the planned structure:
+
+1.  **`main.py`:**  The main entry point.  Handles argument parsing, initializes the agents, runs the idea generation and evaluation loop, and saves the results to `ideas.json`.
+2.  **`agents.py`:** Defines the agent classes (Generation, Reflection, Ranking, Proximity, Evolution, MetaReview, Supervisor).  Each agent will have a `run()` method that performs its specific task.  These methods will use prompts tailored to their roles, aiming to emulate the behavior described in the paper. Since I do not have access to Gemini 2.0, the agents will use the OpenAI API.
+3.  **`utils.py`:**  Utility functions, such as loading the experiment file, saving ideas to JSON, and potentially helper functions for the Elo ranking system.
+4.  **`prompts.py`:**  A central place to store the prompts used by the agents. This makes it easier to modify and experiment with the prompts.
+5.  **`templates/{experiment}/experiment.py`:** The baseline experiment file (provided as an argument).
+6.  **`templates/{experiment}/ideas.json`:** The output file.
+
+Here's the code for each file:
+
+**1. `main.py`**
+
+```python
+import argparse
+import json
+import os
+from agents import GenerationAgent, ReflectionAgent, RankingAgent, ProximityAgent, EvolutionAgent, MetaReviewAgent, Supervisor
+from utils import load_experiment_file, save_ideas_to_json
+
+def main():
+    parser = argparse.ArgumentParser(description="AI Co-Scientist for Machine Learning Experiment Modification")
+    parser.add_argument("--experiment", required=True, help="Name of the experiment (directory in templates/)")
+    parser.add_argument("--num_ideas", type=int, default=5, help="Number of top ideas to save")
+    parser.add_argument("--skip_lit_review", action="store_true", help="Skip literature review steps (for faster testing)")
+    parser.add_argument("--iterations", type=int, default=3, help="Number of iterations for the co-scientist loop")
+    args = parser.parse_args()
+
+    experiment_path = os.path.join("templates", args.experiment)
+    experiment_file = os.path.join(experiment_path, "experiment.py")
+    ideas_file = os.path.join(experiment_path, "ideas.json")
+
+    if not os.path.exists(experiment_file):
+        print(f"Error: Experiment file not found: {experiment_file}")
+        return
+
+    experiment_code = load_experiment_file(experiment_file)
+
+    # Initialize agents
+    generation_agent = GenerationAgent(experiment_code, skip_lit_review=args.skip_lit_review)
+    reflection_agent = ReflectionAgent(experiment_code, skip_lit_review=args.skip_lit_review)
+    ranking_agent = RankingAgent()
+    proximity_agent = ProximityAgent()
+    evolution_agent = EvolutionAgent(experiment_code)
+    meta_review_agent = MetaReviewAgent()
+    supervisor = Supervisor()
+
+    ideas = []
+
+    # Idea generation and evaluation loop
+    for i in range(args.iterations):
+        print(f"Iteration {i+1}/{args.iterations}")
+
+        # Generation
+        new_ideas = generation_agent.run(ideas)  # Pass existing ideas for context
+        ideas.extend(new_ideas)
+
+        # Reflection
+        for idea in ideas:
+            reflection_agent.run(idea)
+
+        # Ranking
+        ranking_agent.run(ideas)
+
+        # Proximity (for tournament organization in Ranking)
+        proximity_agent.run(ideas)
+
+        # Evolution
+        evolved_ideas = []
+        top_ideas = sorted(ideas, key=lambda x: x['ELO rating'], reverse=True)[:3] # evolve top 3
+        for idea in top_ideas:
+            evolved_ideas.extend(evolution_agent.run(idea, ideas)) # pass all ideas for context
+        ideas.extend(evolved_ideas)
+
+        # Meta-review
+        meta_review_agent.run(ideas) # Apply meta review to all ideas
+
+        # Supervisor - Simulate resource allocation based on meta-review, could involve adjusting agent prompts or focus
+        supervisor.run(ideas, generation_agent, reflection_agent, ranking_agent, evolution_agent)
+
+    # Sort ideas by ELO rating and save the top N
+    top_ideas = sorted(ideas, key=lambda x: x['ELO rating'], reverse=True)[:args.num_ideas]
+    save_ideas_to_json(top_ideas, ideas_file)
+
+    print(f"Top {args.num_ideas} ideas saved to {ideas_file}")
+
+if __name__ == "__main__":
+    main()
+```
+
+**2. `agents.py`**
+
+```python
+import os
+import openai
+from prompts import generation_prompt, reflection_prompt, ranking_prompt, evolution_prompt, meta_review_prompt, supervisor_prompt
+from utils import calculate_similarity
+
+openai.api_key = os.getenv("OPENAI_API_KEY")  # Ensure OPENAI_API_KEY is set in environment
+
+class Agent:
+    def __init__(self):
+        pass
+
+    def run(self, *args, **kwargs):
+        raise NotImplementedError
+
+class GenerationAgent(Agent):
+    def __init__(self, experiment_code, skip_lit_review=False):
+        super().__init__()
+        self.experiment_code = experiment_code
+        self.skip_lit_review = skip_lit_review
+
+    def run(self, existing_ideas):
+        prompt = generation_prompt.format(experiment_code=self.experiment_code, existing_ideas="\n".join([idea["Name"] + ": " + idea["Title"] for idea in existing_ideas]))
+        print("Generation Agent Prompt:\n", prompt)  # Debugging
+        response = openai.Completion.create(
+            engine="text-davinci-003", # or another suitable model
+            prompt=prompt,
+            max_tokens=500,
+            n=3,  # Generate multiple ideas at once
+            stop=None,
+            temperature=0.7,
+        )
+
+        ideas = []
+        for i in range(len(response.choices)):
+            try:
+                idea_text = response.choices[i].text.strip()
+                idea_lines = idea_text.split("\n")
+                name = idea_lines[0].split(": ")[1]
+                title = idea_lines[1].split(": ")[1]
+                experiment = idea_lines[2].split(": ")[1]
+                interestingness = int(idea_lines[3].split(": ")[1])
+                feasibility = int(idea_lines[4].split(": ")[1])
+                novelty = int(idea_lines[5].split(": ")[1])
+                notes = idea_lines[6].split(": ")[1]
+
+                idea = {
+                    "Name": name,
+                    "Title": title,
+                    "Experiment": experiment,
+                    "Interestingness": interestingness,
+                    "Feasibility": feasibility,
+                    "Novelty": novelty,
+                    "ELO rating": 1200,
+                    "Notes": notes
+                }
+                ideas.append(idea)
+            except Exception as e:
+                print(f"Error parsing idea: {e}")
+                continue
+
+        return ideas
+
+class ReflectionAgent(Agent):
+    def __init__(self, experiment_code, skip_lit_review=False):
+        super().__init__()
+        self.experiment_code = experiment_code
+        self.skip_lit_review = skip_lit_review
+
+    def run(self, idea):
+        prompt = reflection_prompt.format(experiment_code=self.experiment_code, idea_title=idea["Title"], idea_experiment=idea["Experiment"])
+        print("Reflection Agent Prompt:\n", prompt)  # Debugging
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=300,
+            stop=None,
+            temperature=0.7,
+        )
+        idea["Reflection"] = response.choices[0].text.strip()
+        print(f"Reflection: {idea['Reflection']}")
+
+class RankingAgent(Agent):
+    def run(self, ideas):
+        # Simplified Elo ranking (pairwise comparisons)
+        for i in range(len(ideas)):
+            for j in range(i + 1, len(ideas)):
+                prompt1 = ranking_prompt.format(idea1_title=ideas[i]["Title"], idea1_experiment=ideas[i]["Experiment"], idea2_title=ideas[j]["Title"], idea2_experiment=ideas[j]["Experiment"])
+                print("Ranking Agent Prompt:\n", prompt1)  # Debugging
+                response1 = openai.Completion.create(
+                    engine="text-davinci-003",
+                    prompt=prompt1,
+                    max_tokens=100,
+                    stop=None,
+                    temperature=0.7,
+                )
+                result1 = response1.choices[0].text.strip()
+                print(f"Ranking Result: {result1}")
+
+                if "Idea 1 is better" in result1:
+                    self.update_elo(ideas[i], ideas[j], winner=True)
+                elif "Idea 2 is better" in result1:
+                    self.update_elo(ideas[i], ideas[j], winner=False)
+                else:
+                    print("Ranking inconclusive, skipping ELO update")
+
+    def update_elo(self, idea1, idea2, winner=True, k=32):
+        rating1 = idea1["ELO rating"]
+        rating2 = idea2["ELO rating"]
+
+        # Calculate expected scores
+        expected1 = 1 / (1 + 10 ** ((rating2 - rating1) / 400))
+        expected2 = 1 / (1 + 10 ** ((rating1 - rating2) / 400))
+
+        # Update ratings
+        if winner:
+            idea1["ELO rating"] = round(rating1 + k * (1 - expected1))
+            idea2["ELO rating"] = round(rating2 + k * (0 - expected2))
+        else:
+            idea1["ELO rating"] = round(rating1 + k * (0 - expected1))
+            idea2["ELO rating"] = round(rating2 + k * (1 - expected2))
+
+class ProximityAgent(Agent):
+    def run(self, ideas):
+        # Assign similarity scores (simplified)
+        for i in range(len(ideas)):
+            for j in range(i + 1, len(ideas)):
+                similarity = calculate_similarity(ideas[i]["Experiment"], ideas[j]["Experiment"])
+                print(f"Similarity between {ideas[i]['Name']} and {ideas[j]['Name']}: {similarity}")
+                # Store similarity (e.g., in a graph structure if needed)
+                # This is a placeholder; a real implementation would build a graph
+                pass
+
+class EvolutionAgent(Agent):
+    def __init__(self, experiment_code):
+        super().__init__()
+        self.experiment_code = experiment_code
+
+    def run(self, idea, all_ideas):
+        prompt = evolution_prompt.format(experiment_code=self.experiment_code, idea_title=idea["Title"], idea_experiment=idea["Experiment"])
+        print("Evolution Agent Prompt:\n", prompt)  # Debugging
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=500,
+            n=2, # generate two evolved ideas
+            stop=None,
+            temperature=0.7,
+        )
+
+        evolved_ideas = []
+        for i in range(len(response.choices)):
+            try:
+                idea_text = response.choices[i].text.strip()
+                idea_lines = idea_text.split("\n")
+                name = idea_lines[0].split(": ")[1]
+                title = idea_lines[1].split(": ")[1]
+                experiment = idea_lines[2].split(": ")[1]
+                interestingness = int(idea_lines[3].split(": ")[1])
+                feasibility = int(idea_lines[4].split(": ")[1])
+                novelty = int(idea_lines[5].split(": ")[1])
+                notes = idea_lines[6].split(": ")[1]
+
+                evolved_idea = {
+                    "Name": name,
+                    "Title": title,
+                    "Experiment": experiment,
+                    "Interestingness": interestingness,
+                    "Feasibility": feasibility,
+                    "Novelty": novelty,
+                    "ELO rating": 1200,
+                    "Notes": notes
+                }
+                evolved_ideas.append(evolved_idea)
+            except Exception as e:
+                print(f"Error parsing evolved idea: {e}")
+                continue
+
+        return evolved_ideas
+
+class MetaReviewAgent(Agent):
+    def run(self, ideas):
+        # Analyze reviews and identify common patterns (simplified)
+        all_reflections = [idea.get("Reflection", "") for idea in ideas]
+        prompt = meta_review_prompt.format(reflections="\n".join(all_reflections))
+        print("Meta Review Agent Prompt:\n", prompt)  # Debugging
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=200,
+            stop=None,
+            temperature=0.7,
+        )
+        meta_review = response.choices[0].text.strip()
+        print(f"Meta Review: {meta_review}")
+
+        # Store meta-review for use in subsequent iterations (e.g., append to prompts)
+        for idea in ideas:
+            idea["MetaReview"] = meta_review
+
+class Supervisor(Agent):
+    def run(self, ideas, generation_agent, reflection_agent, ranking_agent, evolution_agent):
+        #Simulate resource allocation and prompt updates based on meta-review
+        all_meta_reviews = [idea.get("MetaReview", "") for idea in ideas]
+        prompt = supervisor_prompt.format(meta_reviews="\n".join(all_meta_reviews))
+        print("Supervisor Agent Prompt:\n", prompt)  # Debugging
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=200,
+            stop=None,
+            temperature=0.7,
+        )
+        supervisor_actions = response.choices[0].text.strip()
+        print(f"Supervisor actions: {supervisor_actions}")
+
+        #Example actions.  This would be customized based on the supervisor prompt
+        if "focus on novelty" in supervisor_actions.lower():
+            generation_agent.prompt = generation_agent.prompt + "\nEmphasize novel ideas"
+        if "improve feasibility" in supervisor_actions.lower():
+            evolution_agent.prompt = evolution_agent.prompt + "\nFocus on improving feasibility"
+```
+
+**3. `utils.py`**
+
+```python
+import json
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def load_experiment_file(file_path):
+    with open(file_path, "r") as f:
+        return f.read()
+
+def save_ideas_to_json(ideas, file_path):
+    with open(file_path, "w") as f:
+        json.dump(ideas, f, indent=4)
+
+def calculate_similarity(text1, text2):
+    # Calculate cosine similarity between two texts
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform([text1, text2])
+    similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
+    return similarity
+```
+
+**4. `prompts.py`**
+
+```python
+generation_prompt = """
+You are an AI co-scientist helping to generate ideas for modifying a machine learning experiment.
+The experiment code is:
+{experiment_code}
+
+Existing ideas:
+{existing_ideas}
+
+Generate a novel idea for modifying the experiment.  The idea should be formatted as follows:
+Name: <A unique name for the idea>
+Title: <A title for the idea in the style of the title of a research paper>
+Experiment: <Explain the idea and how to implement it>
+Interestingness: <Give the idea an interestness score between 1 and 10>
+Feasibility: <Give the idea a feasibility score between 1 and 10>
+Novelty: <Give the idea a novelty score between 1 and 10>
+Notes: <Give additional thoughts about the idea and justification for why it was decided on>
+"""
+
+reflection_prompt = """
+You are an AI co-scientist helping to review an idea for modifying a machine learning experiment.
+The experiment code is:
+{experiment_code}
+
+The idea title is: {idea_title}
+The idea experiment is: {idea_experiment}
+
+Provide a reflection on the idea, considering its potential impact, limitations, and possible improvements.
+"""
+
+ranking_prompt = """
+You are an AI co-scientist helping to rank two ideas for modifying a machine learning experiment.
+
+Idea 1 Title: {idea1_title}
+Idea 1 Experiment: {idea

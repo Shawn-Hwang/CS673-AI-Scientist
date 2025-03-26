@@ -7,6 +7,7 @@ import time
 from parse_ideas import parse_json_to_ideas, create_tournament_pairs
 from pairwise_comparison import compare_two_ideas
 from llm import create_client
+import os
 
 
 def record_comparison_results(winner_id: str, loser_id: str, elo_ratings: Dict[str, float], 
@@ -54,7 +55,7 @@ def record_comparison_results(winner_id: str, loser_id: str, elo_ratings: Dict[s
     
     return elo_ratings
 
-def calculate_elo_rankings(idea_list: List[Tuple[str, str]], client, model, 
+def calculate_elo_rankings(idea_list: List[Tuple[str, str]], client, model, experiment,
                           initial_rating: int = 1400, k_factor: int = 32) -> Tuple[Dict[str, float], List[Dict]]:
     """
     Calculate ELO rankings for a list of ideas
@@ -86,7 +87,7 @@ def calculate_elo_rankings(idea_list: List[Tuple[str, str]], client, model,
         # Start timing the comparison
         start_time = time.time()
         
-        winner_id, loser_id = compare_two_ideas(idea_1, idea_2, client, model)
+        winner_id, loser_id = compare_two_ideas(idea_1, idea_2, client, model, experiment)
         
         # Calculate the time taken
         comparison_time = time.time() - start_time
@@ -104,8 +105,7 @@ def calculate_elo_rankings(idea_list: List[Tuple[str, str]], client, model,
 
 
 def save_results_to_csv(elo_ratings: Dict[str, float], comparison_history: List[Dict], 
-                       ratings_file: str = 'idea_rankings.csv', 
-                       history_file: str = 'comparison_history.csv'):
+                       experiment: str):
     """
     Save ELO ratings and comparison history to CSV files
     
@@ -116,7 +116,7 @@ def save_results_to_csv(elo_ratings: Dict[str, float], comparison_history: List[
         history_file: Filename for history CSV
     """
     # Save final rankings
-    with open(ratings_file, 'w', newline='') as f:
+    with open(os.path.join("templates", experiment, "idea_rankings.csv"), 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['idea_id', 'elo_rating'])
         
@@ -128,20 +128,22 @@ def save_results_to_csv(elo_ratings: Dict[str, float], comparison_history: List[
     # Save comparison history
     if comparison_history:
         try:
-            with open(history_file, 'w', newline='') as f:
+            with open(os.path.join("templates", experiment, "comparison_history.csv"), 'w', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=comparison_history[0].keys())
                 writer.writeheader()
                 writer.writerows(comparison_history)
-            print(f"Comparison history saved to {history_file}")
+            comparison_file_path = os.path.join("templates", experiment, "comparison_history.csv")
+            print(f"Comparison history saved to {comparison_file_path}")
         except Exception as e:
             print(f"Error saving comparison history: {e}")
     else:
         print("No comparison history to save - history list is empty")
     
-    print(f"Final rankings saved to {ratings_file}")
+    ranking_file_path = os.path.join("templates", experiment, "idea_rankings.csv")
+    print(f"Final rankings saved to {ranking_file_path}")
 
 # Main function to run the entire process
-def run_elo_tournament(json_file_path: str, client, model, max_ideas=3):
+def run_elo_tournament(experiment: str, client, model, max_ideas=3):
     """
     Run the complete ELO ranking process
     
@@ -151,26 +153,30 @@ def run_elo_tournament(json_file_path: str, client, model, max_ideas=3):
         model: LLM model to use
     """
     # Step 1: Parse JSON to ideas
-    idea_list = parse_json_to_ideas(json_file_path)
+    idea_list = parse_json_to_ideas(os.path.join("templates", experiment, "ideas.json"))
     if max_ideas:
         idea_list = idea_list[:max_ideas]
     
     # Steps 4-5: Calculate ELO rankings
-    elo_ratings, comparison_history = calculate_elo_rankings(idea_list, client, model)
+    elo_ratings, comparison_history = calculate_elo_rankings(idea_list, client, model, experiment)
     
     # Save results
-    save_results_to_csv(elo_ratings, comparison_history)
+    save_results_to_csv(elo_ratings, comparison_history, experiment)
     
     return elo_ratings, comparison_history
 
 if __name__ == "__main__":
-    # file_path = "/home/huang717/CS673-AI-Scientist/templates/nanoGPT/ideas.json"
-    file_path = '/home/huang717/CS673-AI-Scientist/templates/ppo_with_folds/ideas.json'
+    # parse the --experiment argument
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment", type=str, default="nanoGPT")
+    args = parser.parse_args()
+    experiment = args.experiment
 
     # Create client
     client, client_model = create_client("gemini-2.0-flash")
 
-    run_elo_tournament(file_path, client, client_model, max_ideas=None)
+    run_elo_tournament(experiment, client, client_model, max_ideas=None)
 
 
 
