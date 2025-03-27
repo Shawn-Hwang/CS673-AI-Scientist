@@ -1,0 +1,119 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "novel": true
+    },
+    {
+        "Name": "fold_then_relu",
+        "Title": "Fold before Activation: Improving MLP networks in PPO with a new Non-linear Layer",
+        "Experiment": "Experiment with using the soft fold layer before instead of after the activation function. Compare the agent performance.",
+        "Interestingness": 2,
+        "Feasibility": 9,
+        "Novelty": 2,
+        "novel": false
+    },
+    {
+        "Name": "svd_alignment",
+        "Title": "SVD-based Initialization for Soft Fold Layers: Enhancing Feature Space Transformation in PPO",
+        "Experiment": "Modify the initialization of the normal vector 'n' in each SoftFold layer to be the u vector corresponding to the largest singular value in the SVD of the weight matrix of the linear layer preceding the SoftFold layer.",
+        "Interestingness": 6,
+        "Feasibility": 6,
+        "Novelty": 5,
+        "novel": true
+    },
+    {
+        "Name": "learnable_folding_function",
+        "Title": "Adaptive Folding Functions: Enhancing Soft Fold Layers with Learnable Piecewise Linear Transformations in PPO",
+        "Experiment": "Replace the sigmoid function in the SoftFold layer with a learnable piecewise linear function. The piecewise linear function will be defined by a fixed number of learnable breakpoints and slopes. Implement the piecewise linear function within the SoftFold class. Experiment with different numbers of breakpoints (e.g., 3, 5, 7). Compare the training dynamics, convergence speed, and final performance with the baseline model using the sigmoid folding function.",
+        "Interestingness": 7,
+        "Feasibility": 6,
+        "Novelty": 6,
+        "novel": true
+    },
+    {
+        "Name": "multiple_hyperplanes",
+        "Title": "Multiple Hyperplanes in Soft Fold Layers: Enhancing Non-Linearity in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes. Each hyperplane will have its own learnable normal vector (n), crease, and stretch parameters. The forward pass will compute the folding effect for each hyperplane independently. The outputs of all hyperplanes will be combined using a weighted sum, where the weights are also learnable parameters. Experiment with different numbers of hyperplanes (e.g., 2, 3, 4). Implement the changes within the SoftFold class. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "novel": true
+    },
+    {
+        "Name": "selective_folding_with_gating",
+        "Title": "Selective Folding with Input-Dependent Gating: Enhancing Soft Fold Layers in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate a learnable gating mechanism. Add a small neural network (e.g., a single linear layer followed by a sigmoid activation) that takes the input feature as input and outputs a gate value between 0 and 1. Multiply the residual vector by this gate value before adding it to the input tensor. Experiment with different architectures for the gating network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model without gating.",
+        "Interestingness": 8,
+        "Feasibility": 6,
+        "Novelty": 7,
+        "novel": true
+    },
+    {
+        "Name": "input_dependent_hyperplane",
+        "Title": "Input-Dependent Hyperplane Orientation in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to predict the hyperplane normal vector (n) as a function of the input tensor. Replace the fixed nn.Parameter 'n' with a small neural network (e.g., a single linear layer or a small MLP) that takes the input tensor as input and outputs a vector of the same dimension as the original 'n'. Normalize the output vector to ensure it has unit length. The forward pass will use this predicted 'n' to compute the folding effect. Experiment with different architectures for the 'n' prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "novel": true
+    },
+    {
+        "Name": "affine_prefolding",
+        "Title": "Affine Pre-Folding Transformation: Enhancing Soft Fold Layers with Learnable Input Warping in PPO",
+        "Experiment": "Modify the SoftFold layer integration in the Agent class to incorporate a learnable affine transformation before the folding operation. Add a linear layer followed by a non-linearity (e.g., ReLU, Tanh) before each SoftFold layer in both the actor and critic networks. Experiment with different non-linearities and hidden layer sizes for the affine transformation. Compare the training dynamics, convergence speed, and final performance with the baseline model without the affine transformation.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "novel": true
+    },
+    {
+        "Name": "batchnorm_aware_softfold",
+        "Title": "BatchNorm-Aware Soft Fold Layers: Enhancing Adaptive Non-Linearity in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate a batch-normalization aware scaling factor. Insert a BatchNorm1d layer before computing the residual vector. Use the batch-normalized output to compute a scaling factor 's' using a linear layer followed by a sigmoid activation: s = sigmoid(linear(batchnorm(x))). Multiply the residual vector by 's' before adding it to the input tensor. This allows the network to selectively apply the folding effect based on the batch-normalized input. Experiment with different hidden sizes for the linear layer. Implement the changes within the SoftFold class. Compare the training dynamics, convergence speed, and final performance with the baseline model without batchnorm-aware scaling.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "novel": true
+    },
+    {
+        "Name": "spectral_normalized_softfold",
+        "Title": "Spectral-Normalized Soft Fold Layers: Enhancing Training Stability in PPO",
+        "Experiment": "Modify the SoftFold layer to apply spectral normalization to the normal vector 'n' before each forward pass. Implement the spectral normalization within the SoftFold class. This involves calculating the spectral norm of 'n' and then dividing 'n' by its spectral norm. Add a boolean flag to enable/disable spectral normalization. Compare the training dynamics, convergence speed, and final performance with the baseline model without spectral normalization.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "novel": true
+    },
+    {
+        "Name": "principal_component_alignment",
+        "Title": "Principal Component Alignment Regularization for Soft Fold Layers: Enhancing Feature Space Transformation in PPO",
+        "Experiment": "Modify the training loop to incorporate a principal component alignment regularization term. Within each mini-batch, compute the covariance matrix of the input data (b_obs[mb_inds]) passed to the actor and critic networks, separately. Compute the eigenvectors of the covariance matrix. Calculate the dot product between the normal vector 'n' of each SoftFold layer and the principal eigenvector (corresponding to the largest eigenvalue). Add a regularization term to the loss function that is proportional to the square of this dot product. Experiment with different weights for the regularization term (e.g., 0.001, 0.01, 0.1). Implement the changes within the training loop in experiment.py. Compare the training dynamics, convergence speed, and final performance with the baseline model without the regularization term.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "novel": true
+    },
+    {
+        "Name": "distance_dependent_folding",
+        "Title": "Distance-Dependent Folding Strength in Soft Fold Layers: Enhancing Non-Linearity in PPO",
+        "Experiment": "Modify the SoftFold layer to make the folding strength dependent on the distance of the input tensor from the origin. Specifically, compute the L2 norm of the input tensor. Use this norm to scale the 'stretch' parameter. The scaling function could be a simple linear function (e.g., stretch = original_stretch * (1 + alpha * norm)), where alpha is a learnable parameter or a fixed hyperparameter. Alternatively, a sigmoid function of the norm could be used to create a saturating effect. Implement these changes within the SoftFold class. Experiment with different values of alpha and different scaling functions. Compare the training dynamics, convergence speed, and final performance with the baseline model without distance-dependent folding.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "novel": true
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "novel": true
+    }
+]
