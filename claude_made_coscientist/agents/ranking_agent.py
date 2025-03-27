@@ -2,6 +2,7 @@ from .base_agent import BaseAgent
 from utils import calculate_elo_update
 import random
 import copy
+import numpy as np
 
 class RankingAgent(BaseAgent):
     """Agent for ranking ideas using Elo system"""
@@ -10,7 +11,7 @@ class RankingAgent(BaseAgent):
         super().__init__(use_genai, model)
         self.initial_elo = 1200
     
-    def rank_ideas(self, ideas, experiment_content, research_goal, num_matches=10):
+    def rank_ideas(self, ideas, proximity_matrix, experiment_content, research_goal, num_matches=10):
         """Rank ideas using pairwise comparisons and an Elo system"""
         # Create deep copies to avoid modifying originals
         ranked_ideas = copy.deepcopy(ideas)
@@ -30,10 +31,20 @@ class RankingAgent(BaseAgent):
         
         # Run tournament matches
         for _ in range(actual_matches):
-            # Select two different ideas for comparison
-            idx1, idx2 = random.sample(range(len(ranked_ideas)), 2)
-            idea1, idea2 = ranked_ideas[idx1], ranked_ideas[idx2]
-            
+            # # Select two different ideas for comparison
+            # idx1, idx2 = random.sample(range(len(ranked_ideas)), 2)
+            # idea1, idea2 = ranked_ideas[idx1], ranked_ideas[idx2]
+
+            # prioritize new ideas and high ranking ideas for matches
+            match_probs = np.array([idea["ELO rating"]+1800*int(idea["Evolved"]) for idea in ranked_ideas])
+            idea1_idx = np.random.choice(np.arange(len(ranked_ideas)), p=match_probs/np.sum(match_probs))
+            idea1 = ranked_ideas[idea1_idx]
+
+            # choose the second idea based on proximity to the first idea
+            match_probs = proximity_matrix[idea1_idx]
+            idea2_idx = np.random.choice(np.arange(len(ranked_ideas)), p=match_probs/np.sum(match_probs))
+            idea2 = ranked_ideas[idea2_idx]
+
             # Compare the ideas
             winner_idx = self.compare_ideas(idea1, idea2, experiment_content, research_goal)
             
@@ -73,7 +84,12 @@ class RankingAgent(BaseAgent):
     def prepare_prompt(self, idea1, idea2, experiment_content, research_goal):
         """Prepare prompt for idea comparison"""
         prompt = f"""
-        You are an expert evaluator tasked with comparing two research ideas for a machine learning experiment.
+        You are an expert in comparative analysis, simulating a panel of machine learning domain experts
+        engaged in a structured discussion to evaluate two competing ideas.
+        The objective is to rigorously determine which idea is superior based on
+        a predefined set of attributes and criteria.
+        The experts possess no pre-existing biases toward either idea and are solely
+        focused on identifying the optimal choice, given that only one can be implemented.
         
         Research Goal: {research_goal}
         
@@ -87,17 +103,11 @@ class RankingAgent(BaseAgent):
         Name: {idea1["Name"]}
         Title: {idea1["Title"]}
         Experiment Description: {idea1["Experiment"]}
-        Interestingness: {idea1["Interestingness"]}
-        Feasibility: {idea1["Feasibility"]}
-        Novelty: {idea1["Novelty"]}
         
         Idea 2:
         Name: {idea2["Name"]}
         Title: {idea2["Title"]}
         Experiment Description: {idea2["Experiment"]}
-        Interestingness: {idea2["Interestingness"]}
-        Feasibility: {idea2["Feasibility"]}
-        Novelty: {idea2["Novelty"]}
         
         Please compare these two ideas and determine which one is superior in terms of:
         1. Alignment with the research goal
@@ -105,11 +115,27 @@ class RankingAgent(BaseAgent):
         3. Technical feasibility
         4. Potential impact
         
-        For each criterion, provide a brief comparison. Then conclude with your final judgment on which idea is better overall.
-        
-        End your response with one of these statements:
-        - "Winner: Idea 1" if the first idea is better
-        - "Winner: Idea 2" if the second idea is better
+        Debate procedure:
+        The discussion will unfold in a series of turns, typically ranging from 3 to 5, with a maximum of 10.
+        Turn 1: begin with a concise summary of both hypotheses and their respective initial reviews.
+        Subsequent turns:
+        * Pose clarifying questions to address any ambiguities or uncertainties.
+        * Critically evaluate each idea in relation to the stated Goal and Criteria.
+        This evaluation should consider aspects such as:
+        - Potential for performance increase.
+        - Utility and practical applicability.
+        - Sufficiency of detail and specificity.
+        - Novelty and originality.
+        - Parameter efficiency and computational complexity.
+        - Potential for generalization and scalability.
+        * Identify and articulate any weaknesses, limitations, or potential flaws in either idea.
+
+        Termination and judgment:
+        Once the discussion has reached a point of sufficient depth (typically 3-5 turns, up to 10 turns)
+        and all relevant questions and concerns have been thoroughly addressed, provide a conclusive judgment.
+        This judgment should succinctly state the rationale for the selection.
+        Then, indicate the superior idea by writing the phrase "better idea: ",
+        followed by "1" (for idea 1) or "2" (for idea 2).
         """
         
         return prompt
@@ -118,9 +144,9 @@ class RankingAgent(BaseAgent):
         """Process the LLM response to determine the winner"""
         try:
             # Look for explicit winner statement
-            if "Winner: Idea 1" in response:
+            if "better idea: 1" in response.lower():
                 return 1
-            elif "Winner: Idea 2" in response:
+            elif "better idea: 2" in response.lower():
                 return 2
             
             # If no explicit winner found, analyze the response

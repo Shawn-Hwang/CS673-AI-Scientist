@@ -14,7 +14,7 @@ def setup_genai_api():
         print("Using dummy responses for testing.")
         return False
 
-def call_llm(prompt, model="gemini-1.5-pro", temperature=0.7, use_genai=True, system_prompt=None):
+def call_llm(prompt, model="gemini-2.0-flash", temperature=0.7, use_genai=True, system_prompt=None):
     """Call LLM with prompt and return response"""
     if not use_genai:
         # Dummy response for testing without API

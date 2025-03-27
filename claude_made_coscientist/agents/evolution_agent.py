@@ -103,7 +103,9 @@ class EvolutionAgent(BaseAgent):
                     "Feasibility": evolved_json.get("Feasibility", original_idea["Feasibility"]),
                     "Novelty": evolved_json.get("Novelty", original_idea["Novelty"]),
                     "Notes": evolved_json.get("Notes", "") + f"\n\nEvolved from original idea: {original_idea['Name']}",
-                    "ELO rating": 1200  # Reset ELO for the evolved idea
+                    "ELO rating": 1200,  # Reset ELO for the evolved idea
+                    "Evolved": True,
+                    "Evolved from": original_idea["Name"]
                 }
                 
                 # Ensure scores are within range
@@ -115,11 +117,7 @@ class EvolutionAgent(BaseAgent):
             else:
                 # Fallback if no JSON could be extracted
                 print("Warning: Could not extract JSON from Evolution Agent response")
-                fallback_idea = copy.deepcopy(original_idea)
-                fallback_idea["Name"] = f"evolved_{original_idea['Name']}"
-                fallback_idea["Title"] = f"Evolved: {original_idea['Title']}"
                 fallback_idea["Notes"] += "\n\nEvolution notes: " + response[:200] + "..."
-                fallback_idea["ELO rating"] = 1200
                 return fallback_idea
                 
         except Exception as e:

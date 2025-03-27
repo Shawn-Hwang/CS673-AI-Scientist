@@ -3,7 +3,7 @@ from utils import call_llm, extract_json_from_text
 class BaseAgent:
     """Base class for all co-scientist agents"""
     
-    def __init__(self, use_genai=True, model="gemini-1.5-pro"):
+    def __init__(self, use_genai=True, model="gemini-2.0-flash"):
         self.context = {}
         self.use_genai = use_genai
         self.model = model

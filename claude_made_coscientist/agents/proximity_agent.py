@@ -15,11 +15,11 @@ class ProximityAgent(BaseAgent):
             
         # Create a proximity matrix
         proximity_matrix = np.zeros((len(ideas), len(ideas)))
-        proximity_graph = {}
+        # proximity_graph = {}
         
         # Calculate pairwise proximity for all ideas
         for i in range(len(ideas)):
-            proximity_graph[ideas[i]["Name"]] = []
+            # proximity_graph[ideas[i]["Name"]] = []
             for j in range(i+1, len(ideas)):
                 # Calculate similarity between idea i and j
                 similarity = self.calculate_similarity(
@@ -33,40 +33,40 @@ class ProximityAgent(BaseAgent):
                 proximity_matrix[i, j] = similarity
                 proximity_matrix[j, i] = similarity
                 
-                # Add to proximity graph if similarity is above threshold
-                if similarity >= 0.5:  # threshold for considering ideas similar
-                    proximity_graph[ideas[i]["Name"]].append({
-                        "name": ideas[j]["Name"],
-                        "similarity": similarity
-                    })
-                    if ideas[j]["Name"] not in proximity_graph:
-                        proximity_graph[ideas[j]["Name"]] = []
-                    proximity_graph[ideas[j]["Name"]].append({
-                        "name": ideas[i]["Name"],
-                        "similarity": similarity
-                    })
+        #         # Add to proximity graph if similarity is above threshold
+        #         if similarity >= 0.5:  # threshold for considering ideas similar
+        #             proximity_graph[ideas[i]["Name"]].append({
+        #                 "name": ideas[j]["Name"],
+        #                 "similarity": similarity
+        #             })
+        #             if ideas[j]["Name"] not in proximity_graph:
+        #                 proximity_graph[ideas[j]["Name"]] = []
+        #             proximity_graph[ideas[j]["Name"]].append({
+        #                 "name": ideas[i]["Name"],
+        #                 "similarity": similarity
+        #             })
         
-        # Add proximity information to each idea
-        for i, idea in enumerate(ideas):
-            # Find most similar ideas
-            similar_indices = np.argsort(proximity_matrix[i])[::-1][1:4]  # Top 3 most similar (excluding self)
-            similar_ideas = []
+        # # Add proximity information to each idea
+        # for i, idea in enumerate(ideas):
+        #     # Find most similar ideas
+        #     similar_indices = np.argsort(proximity_matrix[i])[::-1][1:4]  # Top 3 most similar (excluding self)
+        #     similar_ideas = []
             
-            for idx in similar_indices:
-                if proximity_matrix[i, idx] > 0:  # Only include if similarity is positive
-                    similar_ideas.append({
-                        "name": ideas[idx]["Name"],
-                        "similarity": float(proximity_matrix[i, idx])
-                    })
+        #     for idx in similar_indices:
+        #         if proximity_matrix[i, idx] > 0:  # Only include if similarity is positive
+        #             similar_ideas.append({
+        #                 "name": ideas[idx]["Name"],
+        #                 "similarity": float(proximity_matrix[i, idx])
+        #             })
             
-            # Add to idea metadata
-            idea["Similar Ideas"] = similar_ideas
+        #     # Add to idea metadata
+        #     idea["Similar Ideas"] = similar_ideas
             
-            # Add a cluster label (very simple clustering)
-            # Ideas with highest similarity to each other get the same cluster
-            idea["Cluster"] = f"cluster_{i % 3}"  # Simple clustering into 3 groups
+        #     # Add a cluster label (very simple clustering)
+        #     # Ideas with highest similarity to each other get the same cluster
+        #     idea["Cluster"] = f"cluster_{i % 3}"  # Simple clustering into 3 groups
         
-        return ideas, proximity_graph
+        return proximity_matrix
     
     def calculate_similarity(self, idea1, idea2, experiment_content, research_goal):
         """Calculate similarity between two ideas"""
@@ -96,18 +96,18 @@ class ProximityAgent(BaseAgent):
         Here is the experiment code context:
         
         ```python
-        {experiment_content[:500]}...  # Truncated for brevity
+        {experiment_content[:18000]}...  # Truncated for brevity
         ```
         
         Idea 1:
         Name: {idea1["Name"]}
         Title: {idea1["Title"]}
-        Experiment Description: {idea1["Experiment"][:300]}...  # Truncated for brevity
+        Experiment Description: {idea1["Experiment"]}... 
         
         Idea 2:
         Name: {idea2["Name"]}
         Title: {idea2["Title"]}
-        Experiment Description: {idea2["Experiment"][:300]}...  # Truncated for brevity
+        Experiment Description: {idea2["Experiment"]}... 
         
         Please analyze the similarity between these two ideas based on:
         1. Conceptual similarity (do they address similar concepts or techniques)

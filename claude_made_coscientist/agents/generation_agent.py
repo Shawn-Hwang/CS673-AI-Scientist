@@ -94,6 +94,8 @@ class GenerationAgent(BaseAgent):
                         idea["Novelty"] = 5
                     if "Notes" not in idea:
                         idea["Notes"] = "No additional notes provided"
+                    if "Evolved" not in idea:
+                        idea["Evolved"] = False
                     
                     # Add ELO rating
                     idea["ELO rating"] = 1200

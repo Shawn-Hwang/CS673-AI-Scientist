@@ -223,6 +223,8 @@ class Agent(nn.Module):
 
 
 def run_experiment(args, seed):
+    start = time.time()
+
     args.seed = seed # setting it up this way allows for multiprocessing
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
@@ -444,6 +446,7 @@ def run_experiment(args, seed):
 
     envs.close()
     writer.close()
+    stop = time.time()
 
     df = pd.DataFrame({'step': reward_steps, 'reward': rewards_across_episodes})
     grouped_df = df.groupby('step')['reward'].mean().reset_index()
@@ -458,6 +461,9 @@ def run_experiment(args, seed):
     results['grad_norm'] = np.mean(gradient_norms)
     results['grad_var'] = np.mean(gradient_vars)
     results['param_norm'] = np.mean(parameter_norms)
+    results['time'] = stop - start
+    results['num_params'] = sum(p.numel() for p in agent.parameters())
+
     return results
 
 if __name__ == "__main__":
@@ -490,6 +496,8 @@ if __name__ == "__main__":
 
     for key, values in aggregated_results.items():
         aggregated_results[key] = np.mean(values).item() 
+
+    aggregated_results['cpu_count'] = multiprocessing.cpu_count()
 
     # write the results to a json 
     with open(f"{args.out_dir}/final_info.json", "w") as f:
