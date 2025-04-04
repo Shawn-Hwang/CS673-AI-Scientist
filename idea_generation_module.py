@@ -16,7 +16,7 @@ from datetime import datetime
 from ai_scientist.generate_ideas import generate_ideas, check_idea_novelty
 from ai_scientist.llm import create_client, AVAILABLE_LLMS
 
-NUM_REFLECTIONS = 1
+NUM_REFLECTIONS = 3
 
 def print_time():
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -86,6 +86,12 @@ def parse_arguments():
         choices=["semanticscholar", "openalex"],
         help="Scholar engine to use.",
     )
+    parser.add_argument(
+        "--idea_file",
+        type=str,
+        default="ideas.json",
+        help="File to save ideas to.",
+    )
     return parser.parse_args()
 
 
@@ -132,7 +138,7 @@ if __name__ == "__main__":
         )
         novel_ideas = [idea for idea in ideas if idea["novel"]]
     
-    with open(osp.join(base_dir, "ideas.json"), "w") as f:
+    with open(osp.join(base_dir, args.idea_file), "w") as f:
         json.dump(ideas, f, indent=4)
 
     

@@ -223,7 +223,7 @@ class Agent(nn.Module):
 
 
 def run_experiment(args, seed):
-    start = time.time()
+    very_start_time = time.time()
 
     args.seed = seed # setting it up this way allows for multiprocessing
     args.batch_size = int(args.num_envs * args.num_steps)
@@ -461,7 +461,7 @@ def run_experiment(args, seed):
     results['grad_norm'] = np.mean(gradient_norms)
     results['grad_var'] = np.mean(gradient_vars)
     results['param_norm'] = np.mean(parameter_norms)
-    results['time'] = stop - start
+    results['time'] = stop - very_start_time
     results['num_params'] = sum(p.numel() for p in agent.parameters())
 
     return results
@@ -501,6 +501,8 @@ if __name__ == "__main__":
 
     # write the results to a json 
     with open(f"{args.out_dir}/final_info.json", "w") as f:
-        json.dump(aggregated_results, f)
+        json.dump(aggregated_results, f, indent=4)
 
     print('total time taken:', time.time() - start)
+    print('mean reward:', aggregated_results['reward'])
+    print('confidence interval:', aggregated_results['reward_low'], aggregated_results['reward_high'])

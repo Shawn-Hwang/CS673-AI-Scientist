@@ -165,8 +165,10 @@ def generate_ideas(
 
     ## SAVE IDEAS
     ideas = []
-    for idea_str in idea_str_archive:
-        ideas.append(json.loads(idea_str))
+    for i, idea_str in enumerate(idea_str_archive):
+        idea = json.loads(idea_str)
+        idea["Idea number"] = i + 1
+        ideas.append(idea)
 
     with open(osp.join(base_dir, "ideas.json"), "w") as f:
         json.dump(ideas, f, indent=4)

@@ -79,7 +79,7 @@ class GenerationAgent(BaseAgent):
             
             if ideas_json:
                 # Ensure each idea has the required fields and initialize ELO rating
-                for idea in ideas_json:
+                for i, idea in enumerate(ideas_json):
                     if "Name" not in idea:
                         idea["Name"] = "unnamed_idea"
                     if "Title" not in idea:
@@ -104,6 +104,7 @@ class GenerationAgent(BaseAgent):
                     idea["Interestingness"] = max(1, min(10, idea["Interestingness"]))
                     idea["Feasibility"] = max(1, min(10, idea["Feasibility"]))
                     idea["Novelty"] = max(1, min(10, idea["Novelty"]))
+                    ideas_json["Idea number"] = i + 1
                 
                 return ideas_json
             else:

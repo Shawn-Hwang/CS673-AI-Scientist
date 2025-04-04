@@ -75,12 +75,16 @@ class EvolutionAgent(BaseAgent):
         {{
             "Name": "evolved_ideaName",
             "Title": "Evolved Research Paper Title",
-            "Experiment": "Improved experiment description",
+            "Experiment": "Description of improved experiment",
             "Interestingness": improved_score,
             "Feasibility": improved_score,
             "Novelty": improved_score,
             "Notes": "Notes on the improvements made"
         }}
+
+        The description of the improved experiment should include all the details necessary to implement one experiment. 
+        The evolved experiment will be implememnted with just the information provided in the description, without 
+        access to the original idea's description, so make sure to include all relevant details.
         
         Ensure the evolved idea is significantly better than the original while remaining true to its core concept.
         """

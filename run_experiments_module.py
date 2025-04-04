@@ -28,6 +28,7 @@ For reference, the baseline results are as follows:
 
 {baseline_results}
 
+Include any additional learnable parameters inside the Agent module. 
 After you complete each change, we will run the command `python experiment.py --out_dir={idea_name}' and evaluate the results.
 YOUR PROPOSED CHANGE MUST USE THIS COMMAND FORMAT, DO NOT ADD ADDITIONAL COMMAND LINE ARGS."""
 
@@ -134,7 +135,7 @@ def do_idea(
     assert not osp.exists(folder_name), f"Folder {folder_name} already exists."
     destination_dir = folder_name
     shutil.copytree(base_dir, destination_dir, dirs_exist_ok=True)
-    with open(osp.join(base_dir, "run_0", "final_info.json"), "r") as f:
+    with open(osp.join(base_dir, "run_1", "final_info.json"), "r") as f:
         baseline_results = json.load(f)
     # baseline_results = {k: v["means"] for k, v in baseline_results.items()}
     exp_file = osp.join(folder_name, "experiment.py")
@@ -219,6 +220,12 @@ def parse_arguments():
         help="Name of the idea to execute.",
     )
     parser.add_argument(
+        "--idea_file",
+        type=str,
+        default="ideas.json",
+        help="Path to the JSON file containing the idea.",
+    )
+    parser.add_argument(
         "--parallel",
         type=int,
         default=0,
@@ -241,7 +248,7 @@ if __name__ == "__main__":
     base_dir = osp.join("templates", args.experiment)
     results_dir = osp.join("results", args.experiment)
 
-    with open(osp.join(base_dir, "ideas.json"), "r") as f:
+    with open(osp.join(base_dir, args.idea_file), "r") as f:
         ideas = json.load(f)
 
     idea = [idea for idea in ideas if idea["Name"]  == args.idea][0]

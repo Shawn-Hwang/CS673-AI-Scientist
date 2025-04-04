@@ -24,7 +24,7 @@ def parse_arguments():
     parser.add_argument(
         "--num_ideas",
         type=int,
-        default=10,
+        default=5,
         help="Number of top ideas to save"
     )
     parser.add_argument(
@@ -56,8 +56,14 @@ def parse_arguments():
     parser.add_argument(
         "--tournament_matches",
         type=int,
-        default=25,
+        default=12,
         help="Number of tournament matches to run"
+    )
+    parser.add_argument(
+        "--idea_file",
+        type=str,
+        default="ideas.json",
+        help="Path to save the ideas JSON file"
     )
     return parser.parse_args()
 
@@ -72,9 +78,9 @@ def load_experiment_file(experiment_name):
     
     return experiment_content
 
-def save_ideas(ideas, experiment_name, proximity_matrix=None):
+def save_ideas(ideas, experiment_name, idea_file, proximity_matrix=None):
     """Save generated ideas to a JSON file"""
-    output_path = osp.join("templates", experiment_name, "ideas.json")
+    output_path = osp.join("templates", experiment_name, idea_file)
     os.makedirs(osp.dirname(output_path), exist_ok=True)
     
     with open(output_path, "w") as f:
@@ -83,10 +89,10 @@ def save_ideas(ideas, experiment_name, proximity_matrix=None):
     print(f"Saved {len(ideas)} ideas to {output_path}")
     
     # Optionally save proximity graph for visualization
-    if proximity_matrix is not None :
-        graph_path = osp.join("templates", experiment_name, "proximity_matrix.npy")
-        np.save(graph_path, proximity_matrix)
-        print(f"Saved proximity graph to {graph_path}")
+    # if proximity_matrix is not None :
+    #     graph_path = osp.join("templates", experiment_name, "proximity_matrix.npy")
+    #     np.save(graph_path, proximity_matrix)
+    #     print(f"Saved proximity graph to {graph_path}")
 
 def main():
     args = parse_arguments()
@@ -175,13 +181,13 @@ def main():
     print("\n=== Step 8: Meta-Review ===")
     meta_review_agent = MetaReviewAgent(use_genai=args.use_genai, model=args.model)
     finalized_ideas = meta_review_agent.finalize_ideas(
-        ideas=final_ranked_ideas[:min(args.num_ideas, len(final_ranked_ideas))],
+        ideas=final_ranked_ideas, # [:min(args.num_ideas, len(final_ranked_ideas))]
         experiment_content=experiment_content,
         research_goal=args.research_goal
     )
     
     # Save the top ideas
-    save_ideas(finalized_ideas, args.experiment, updated_proximity_matrix)
+    save_ideas(finalized_ideas, args.experiment, args.idea_file, updated_proximity_matrix)
     
     # Print top ideas summary
     print("\n=== Top Ideas Generated ===")

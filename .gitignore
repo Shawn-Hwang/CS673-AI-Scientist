@@ -172,7 +172,7 @@ data/
 *ckpt.pt
 *.zip
 ICLR2022-OpenReviewData/
-templates/*/run_0/
+templates/*/run*/
 templates/*/*.png
 results/*
 
@@ -182,7 +182,7 @@ logs/
 *.err
 
 # no fold runs
-*baseline/
+*baseline*/
 
 # install tl stuff
 install-tl-unx.tar.gz

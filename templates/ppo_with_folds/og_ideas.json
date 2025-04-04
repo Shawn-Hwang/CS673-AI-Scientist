@@ -1,5 +1,14 @@
 [
     {
+        "Name": "repulsive_force",
+        "Title": "Repulsive Force for Hyperplane Adaptation in Soft Fold Layers: Enhancing Non-Linearity in PPO",
+        "Experiment": "If the input data consistently clusters on one side of the hyperplane, the SoftFold layer's effectiveness diminishes. To address this, we introduce a repulsive force that pushes the normal vector `n` away from the region of high data density. This is achieved by calculating the mean input vector `x_mean` across a batch and adding a small, scaled component of `(n - x_mean)` to the gradient of `n` during backpropagation. This encourages the hyperplane to position itself more centrally within the data distribution. This is regularized to ensure n remains normalized. The scaling factor for the repulsive force on `n` is a small hyperparameter (e.g., 0.01) that can be tuned to balance the need for adaptation with the stability of the training process.",
+        "Interestingness": 7,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "novel": true
+    },
+    {
         "Name": "fold_specific_learning_rates",
         "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
         "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
