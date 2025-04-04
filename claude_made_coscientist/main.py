@@ -35,7 +35,7 @@ def parse_arguments():
     parser.add_argument(
         "--research_goal",
         type=str,
-        default="Generate novel ideas to improve the performance or capabilities of the experiment",
+        default="Generate novel ideas to improve the performance and efficiency of the SoftFold layer and its usefulness in MLP networks.",
         help="Research goal for the idea generation"
     )
     parser.add_argument(
