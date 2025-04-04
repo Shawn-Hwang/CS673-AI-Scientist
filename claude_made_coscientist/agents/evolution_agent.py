@@ -32,12 +32,18 @@ class EvolutionAgent(BaseAgent):
             research_goal=research_goal
         )
         
-        # Call LLM
-        response = self.call_llm(prompt)
+        for i in range(4) : # LLM may fail to generate valid JSON
+            print(f"Attempt {i+1} to evolve idea: {idea['Name']}")
+            # Call LLM
+            response = self.call_llm(prompt)
+            # Process response
+            evolved_idea = self.process_response(response, idea)
+            if evolved_idea is not None:
+                break
         
-        # Process response
-        evolved_idea = self.process_response(response, idea)
-        
+        if evolved_idea is None:
+            print("Failed to evolve idea after 4 attempts.")
+            
         return evolved_idea
     
     def prepare_prompt(self, idea, experiment_content, research_goal):
@@ -87,6 +93,7 @@ class EvolutionAgent(BaseAgent):
         access to the original idea's description, so make sure to include all relevant details.
         
         Ensure the evolved idea is significantly better than the original while remaining true to its core concept.
+        Make sure to properly format the JSON response, including all required fields.
         """
         
         return prompt
@@ -121,14 +128,14 @@ class EvolutionAgent(BaseAgent):
             else:
                 # Fallback if no JSON could be extracted
                 print("Warning: Could not extract JSON from Evolution Agent response")
-                fallback_idea["Notes"] += "\n\nEvolution notes: " + response[:200] + "..."
-                return fallback_idea
+                # original_idea["Notes"] += "\n\nEvolution notes: " + response[:200] + "..."
+                return None
                 
         except Exception as e:
             print(f"Error processing Evolution Agent response: {e}")
             # Return a slightly modified copy of the original as fallback
-            fallback_idea = copy.deepcopy(original_idea)
-            fallback_idea["Name"] = f"evolved_{original_idea['Name']}"
-            fallback_idea["Notes"] += "\nNote: Evolution with minimal changes due to processing error."
-            fallback_idea["ELO rating"] = 1200
-            return fallback_idea
+            # fallback_idea = copy.deepcopy(original_idea)
+            # fallback_idea["Name"] = f"evolved_{original_idea['Name']}"
+            # fallback_idea["Notes"] += "\nNote: Evolution with minimal changes due to processing error."
+            # fallback_idea["ELO rating"] = 1200
+            return None
