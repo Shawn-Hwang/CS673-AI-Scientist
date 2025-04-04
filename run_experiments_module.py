@@ -135,7 +135,7 @@ def do_idea(
     assert not osp.exists(folder_name), f"Folder {folder_name} already exists."
     destination_dir = folder_name
     shutil.copytree(base_dir, destination_dir, dirs_exist_ok=True)
-    with open(osp.join(base_dir, "run_1", "final_info.json"), "r") as f:
+    with open(osp.join(base_dir, "run_0", "final_info.json"), "r") as f:
         baseline_results = json.load(f)
     # baseline_results = {k: v["means"] for k, v in baseline_results.items()}
     exp_file = osp.join(folder_name, "experiment.py")
