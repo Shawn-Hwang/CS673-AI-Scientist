@@ -104,7 +104,7 @@ class GenerationAgent(BaseAgent):
                     idea["Interestingness"] = max(1, min(10, idea["Interestingness"]))
                     idea["Feasibility"] = max(1, min(10, idea["Feasibility"]))
                     idea["Novelty"] = max(1, min(10, idea["Novelty"]))
-                    ideas_json["Idea number"] = i + 1
+                    idea["Idea number"] = i + 1
                 
                 return ideas_json
             else:
