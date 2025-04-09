@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import time
 from typing import List, Dict, Union
+import polars as pl
 
 import backoff
 import requests
@@ -25,6 +26,8 @@ Here are the ideas that you have already generated:
 Come up with the next impactful and creative idea for research experiments and directions you can feasibly investigate with the code provided.
 Note that you will not have access to any additional resources or datasets.
 Make sure any idea is not overfit the specific training dataset or model, and has wider significance.
+
+{persona_description}
 
 Respond in the following format:
 
@@ -58,6 +61,7 @@ Ensure the idea is clear and concise, and the JSON is the correct format.
 Do not make things overly complicated.
 In the next attempt, try and refine and improve your idea.
 Stick to the spirit of the original idea unless there are glaring issues.
+{persona_description}
 
 Respond in the same format as before:
 THOUGHT:
@@ -80,6 +84,7 @@ def generate_ideas(
         skip_generation=False,
         max_num_generations=20,
         num_reflections=5,
+        personas=False
 ):
     if skip_generation:
         # Load existing ideas from file
@@ -109,12 +114,20 @@ def generate_ideas(
 
     idea_system_prompt = prompt["system"]
 
+    # read in the huggingface persona data 
+    df = pl.read_ndjson('hf://datasets/proj-persona/PersonaHub/persona.jsonl')
+    df = df.sample(n=max_num_generations).to_pandas()
+
     for _ in range(max_num_generations):
         print()
         print(f"Generating idea {_ + 1}/{max_num_generations}")
         try:
             prev_ideas_string = "\n\n".join(idea_str_archive)
-
+            if personas : 
+                persona = df.loc[_, "persona"]
+                persona_description = f"Perform the task with the following persona: {persona}"
+            else :
+                persona_description = ""
             msg_history = []
             print(f"Iteration 1/{num_reflections}")
             text, msg_history = get_response_from_llm(
@@ -123,6 +136,7 @@ def generate_ideas(
                     code=code,
                     prev_ideas_string=prev_ideas_string,
                     num_reflections=num_reflections,
+                    persona_description=persona_description,
                 ),
                 client=client,
                 model=model,
@@ -140,7 +154,8 @@ def generate_ideas(
                     print(f"Iteration {j + 2}/{num_reflections}")
                     text, msg_history = get_response_from_llm(
                         idea_reflection_prompt.format(
-                            current_round=j + 2, num_reflections=num_reflections
+                            current_round=j + 2, num_reflections=num_reflections,
+                            persona_description=persona_description,
                         ),
                         client=client,
                         model=model,
@@ -152,6 +167,8 @@ def generate_ideas(
                     assert (
                             json_output is not None
                     ), "Failed to extract JSON from LLM output"
+                    if personas:
+                        json_output["Persona"] = persona
                     print(json_output)
 
                     if "I am done" in text:

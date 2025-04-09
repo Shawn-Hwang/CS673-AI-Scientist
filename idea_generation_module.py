@@ -92,6 +92,11 @@ def parse_arguments():
         default="ideas.json",
         help="File to save ideas to.",
     )
+    parser.add_argument(
+        "--personas",
+        action="store_true",
+        help="Use personas for idea generation.",
+    )
     return parser.parse_args()
 
 
@@ -127,6 +132,7 @@ if __name__ == "__main__":
         skip_generation=args.skip_idea_generation,
         max_num_generations=args.num_ideas,
         num_reflections=NUM_REFLECTIONS,
+        personas=args.personas,
     )
     if not args.skip_novelty_check:
         ideas = check_idea_novelty(

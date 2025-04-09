@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "stochastic_oscillating_crease",
+        "Title": "Stochastic Oscillating Crease: Enhanced Rhythmic Exploration in PPO with Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to introduce a stochastic, time-dependent oscillation to the 'crease' parameter. Implement a function that takes the current training iteration as input and outputs a value that modulates the crease. This function will include a sine wave (crease = base_crease + amplitude * sin(frequency * iteration)) and a noise component. The noise component will be sampled from a normal distribution (noise ~ N(0, noise_std)) or a uniform distribution (noise ~ U(-noise_range, noise_range)). The base_crease, amplitude, frequency, and noise_std (or noise_range) will be hyperparameters. In the Agent class, pass the global_step variable to the SoftFold layers. Modify the SoftFold's forward function to calculate the crease based on the time-dependent function with added noise. Run experiments with different amplitude, frequency, and noise parameters, comparing the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "a devoted fan of Tkay Maidza and electronic music",
+        "Idea number": 3
+    },
+    {
+        "Name": "targeted_orthogonal_regularization",
+        "Title": "Targeted Orthogonal Regularization for Soft Fold Layers: Enhancing Hyperplane Alignment Near Decision Boundaries in PPO",
+        "Experiment": "Modify the Agent class and SoftFold layer to implement targeted orthogonal regularization. 1. In the Agent class, after the first linear layer in both the actor and critic networks, store the output of this layer (before the Tanh activation). 2. In the SoftFold layer's forward function, calculate the dot product of the stored output from the linear layer (let's call it 'linear_output') and the normal vector 'n'. 3. Calculate the cosine similarity between 'linear_output' and 'n'. 4. Create a mask that is 1 when abs(linear_output @ n) < threshold, and 0 otherwise. The threshold is a hyperparameter (e.g., 0.1, 0.5, 1.0). 5. Calculate the regularization term as the mean of the masked cosine similarity. 6. Add this regularization term to the overall loss in the training loop (in `experiment.py`), weighted by a regularization coefficient (e.g., 0.001, 0.01, 0.1). Compare the training dynamics, convergence speed, and final performance with the baseline model. Also, monitor the mean masked cosine similarity during training using tensorboard.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A sports-loving Singaporean who rejects impromptu plans.",
+        "Idea number": 4
+    },
+    {
+        "Name": "mixture_of_soft_folds",
+        "Title": "Mixture of Soft Fold Layers: Context-Aware Folding in PPO",
+        "Experiment": "Modify the SoftFold layer to implement a mixture of soft folds. Replace the single SoftFold layer with an ensemble of N SoftFold layers, each with its own (learnable) normal vector, crease, and stretch parameters. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (N,). The forward pass will compute the output of each SoftFold layer in the ensemble and combine them using the learned weights. Experiment with different values for N (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 9,
+        "Feasibility": 5,
+        "Novelty": 8,
+        "Persona": "A university professor specializing in cultural anthropology, engaging in thought-provoking discussions with the viewer",
+        "Idea number": 5
+    },
+    {
+        "Name": "context_aware_soft_fold_ensemble",
+        "Title": "Context-Aware Soft Fold Ensemble: Adaptive Representation Learning with Shared Context in PPO",
+        "Experiment": "Modify the Agent class to replace each SoftFold layer with an ensemble of N SoftFold layers (e.g., N=2, 3, or 4). Each SoftFold layer in the ensemble will have its own normal vector 'n', crease, and stretch parameters. Introduce a set of learnable 'context' weights, one for each SoftFold ensemble in the network. The context weights will be a vector of size N, and will be initialized randomly. Normalize these weights using a softmax function. The forward pass of the Agent will first normalize the context weights using softmax to ensure they sum to one. Then, it will compute the output of each SoftFold layer in the ensemble and compute the weighted sum of these outputs using the normalized context weights. Compare the training dynamics, convergence speed, and final performance with the baseline model and different values for N. Also, analyze the learned context weights to understand how they are influencing the combination of SoftFold layers.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A neonatologist specializing in critical care medicine and collaborating with the researcher on clinical trials",
+        "Idea number": 6
+    },
+    {
+        "Name": "shared_contextual_gating",
+        "Title": "Shared Contextual Gating for Soft Fold Layers: Coordinated Input Modulation in PPO",
+        "Experiment": "Modify the Agent class to introduce a shared context vector that influences the gating at all SoftFold layers. 1. In the Agent class, create a learnable context vector (torch.nn.Parameter). 2. Modify the gating network to take both the output of the previous layer (Tanh) and the context vector as input. Concatenate these two vectors before feeding them into the linear layer. 3. In the forward pass, pass the context vector to each gating network. 4. Compare the training dynamics, convergence speed, and final performance with the baseline model and the original contextual gating mechanism. Experiment with different sizes for the context vector and different methods of combining the context vector with the output of the previous layer (e.g., attention mechanisms).",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A rare book collector with an extraordinary collection of scripts and screenplays",
+        "Idea number": 7
+    },
+    {
+        "Name": "reward_shaping_transition",
+        "Title": "Reward Shaping with Smooth Transition for Soft Fold Layers: Stabilizing Learning in PPO",
+        "Experiment": "Implement a two-phase training regime. Phase 1: Train the agent in the original LunarLander environment, but with a shaped reward function. The shaped reward function will consist of two components: a reward for staying close to the center of the environment (proportional to -abs(horizontal position)) and a reward for maintaining a stable altitude (proportional to -abs(vertical velocity)). Scale these rewards to be comparable to the original reward scale. Train for a specified number of timesteps (e.g., pretraining_timesteps). Transition Phase: Over a specified number of timesteps (e.g., transition_timesteps), linearly interpolate between the shaped reward and the original reward. The interpolation weight will gradually shift from 1 (fully shaped reward) to 0 (fully original reward). Phase 2: Continue training in the original LunarLander environment with the original reward function for the remaining timesteps. Compare the training dynamics, convergence speed, and final performance with the baseline model trained directly on the original environment and with the reward_shaping_pretraining method without a transition phase. Add hyperparameters to control the number of timesteps for the pretraining phase (pretraining_timesteps), the number of timesteps for the transition phase (transition_timesteps), and the scaling factors for the shaped reward components. Also, monitor the average shaped reward during Phase 1 and the interpolation weight during the transition phase to ensure the transition is smooth.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A non-traditional bride who wants to have a boho-themed wedding with a flowy, unconventional dress",
+        "Idea number": 8
+    },
+    {
+        "Name": "input_scaling_shifting",
+        "Title": "Input Scaling and Shifting for Soft Fold Layers: Optimizing Input Distribution in PPO",
+        "Experiment": "Modify the Agent class to incorporate an input scaling and shifting module before each SoftFold layer. 1. Implement an input scaling and shifting module that consists of a small MLP with one hidden layer and a Tanh activation function. The MLP will take the output of the previous layer (e.g., the Tanh activation) as input and output a transformed vector of the same size. The hidden layer size will be the same as the input/output size. 2. In the Agent class, insert the input scaling and shifting module before each SoftFold layer. 3. Train the agent and compare the training dynamics, convergence speed, and final performance with the baseline model. Experiment with different hidden layer sizes. Also, visualize the learned weights and biases of the MLP to understand how the input scaling and shifting module is transforming the input distribution.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A patient and enthusiastic vocal coach who believes everyone can learn to sing beautifully",
+        "Idea number": 9
+    },
+    {
+        "Name": "supervised_soft_fold_imitation",
+        "Title": "Supervised Soft Fold Imitation: Guiding Representation Learning with Expert Demonstrations in PPO",
+        "Experiment": "Modify the SoftFold layer and the training loop to implement supervised soft fold imitation. 1. In the SoftFold layer's forward function, calculate the 'ideal' normal vector 'n_ideal' based on the raw environment observation (the input to the Agent). 'n_ideal' can be calculated as a function of the observation. This function represents our expert knowledge about the task. For example, for the LunarLander environment, we might define 'n_ideal' to be a vector that is proportional to the lander's horizontal position, or a combination of horizontal position and vertical velocity. Normalize 'n_ideal' to have unit length. 2. Normalize the current normal vector 'n' to have unit length. 3. Calculate the L2 loss between the normalized 'n' and the normalized 'n_ideal'. 4. Create a new loss term, 'imitation_loss', equal to the L2 loss. 5. Add this 'imitation_loss' to the overall loss in the training loop (in `experiment.py`), weighted by a regularization coefficient (e.g., 0.001, 0.01, 0.1). 6. Experiment with different functions for calculating 'n_ideal' and different values for the regularization coefficient. Compare the training dynamics, convergence speed, and final performance with the baseline model. Also, monitor the L2 loss between 'n' and 'n_ideal' during training using tensorboard.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A college graduate with a degree in business marketing who tries to convince their parent to adopt new sales strategies",
+        "Idea number": 10
+    }
+]
