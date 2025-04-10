@@ -1,5 +1,6 @@
 from .base_agent import BaseAgent
 from .generation_agent import GenerationAgent
+from .debate_agent import DebateAgent
 from .reflection_agent import ReflectionAgent
 from .ranking_agent import RankingAgent
 from .evolution_agent import EvolutionAgent
@@ -9,6 +10,7 @@ from .proximity_agent import ProximityAgent
 __all__ = [
     'BaseAgent',
     'GenerationAgent',
+    'DebateAgent',
     'ReflectionAgent',
     'RankingAgent',
     'EvolutionAgent',
