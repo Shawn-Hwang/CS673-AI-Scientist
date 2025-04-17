@@ -29,9 +29,20 @@ def parse_arguments():
         help="Number of top ideas to save"
     )
     parser.add_argument(
+        "--temperature",
+        type=float,
+        default=1.0,
+        help="Temperature for idea generation and debate"
+    )
+    parser.add_argument(
         "--skip_lit_review",
         action="store_true",
         help="Skip literature review step"
+    )
+    parser.add_argument(
+        "--use_personas",
+        action="store_true",
+        help="Use personas for idea generation"
     )
     parser.add_argument(
         "--research_goal",
@@ -57,7 +68,7 @@ def parse_arguments():
     parser.add_argument(
         "--tournament_matches",
         type=int,
-        default=12,
+        default=14,
         help="Number of tournament matches to run"
     )
     parser.add_argument(
@@ -97,7 +108,16 @@ def save_ideas(ideas, experiment_name, idea_file, proximity_matrix=None):
 
 def main():
     args = parse_arguments()
-    
+
+    use_personas = args.use_personas
+    if use_personas:
+        print("Using personas for idea generation")
+    else:
+        print("Not using personas for idea generation")
+
+    temperature = args.temperature
+    print(f"Temperature set to {temperature}")
+
     # Setup Gemini API if needed
     if args.use_genai:
         setup_genai_api()
@@ -109,24 +129,39 @@ def main():
     # Step 1: Generate initial ideas
     print("\n=== Step 1: Generating Initial Ideas ===")
     generation_agent = GenerationAgent(use_genai=args.use_genai, model=args.model)
-    initial_ideas = generation_agent.generate_ideas_with_personas(
-        experiment_content=experiment_content,
-        research_goal=args.research_goal,
-        skip_lit_review=args.skip_lit_review,
-        num_ideas=args.num_ideas
-    )
+    if use_personas:
+        initial_ideas = generation_agent.generate_ideas_with_personas(
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            skip_lit_review=args.skip_lit_review,
+            num_ideas=args.num_ideas,
+            temperature=temperature
+        )
+    else:
+        initial_ideas = generation_agent.generate_ideas(
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            skip_lit_review=args.skip_lit_review,
+            num_ideas=args.num_ideas,
+            temperature=temperature
+        )
     print(f"Generated {len(initial_ideas)} initial ideas")
 
     # Step 2: Debate ideas
-    print("\n=== Step 2: Debating Ideas ===")
-    debate_agent = DebateAgent(use_genai=args.use_genai, model=args.model)
-    debated_ideas = debate_agent.debate_ideas(
-        ideas=initial_ideas,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal
-    )
-    print(f"Debated {len(debated_ideas)} ideas")
-    # save_ideas(debated_ideas, args.experiment, 'debate_notes.json')
+    if use_personas:
+        print("\n=== Step 2: Debating Ideas ===")
+        debate_agent = DebateAgent(use_genai=args.use_genai, model=args.model)
+        debated_ideas = debate_agent.debate_ideas(
+            ideas=initial_ideas,
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            temperature=temperature
+        )
+        print(f"Debated {len(debated_ideas)} ideas")
+        # save_ideas(debated_ideas, args.experiment, 'debate_notes.json')
+    else:
+        debated_ideas = initial_ideas
+        print("Skipping debate step as personas are not used")
     
     # Step 2: Review ideas
     print("\n=== Step 3: Reviewing Ideas ===")
@@ -151,43 +186,43 @@ def main():
     # Step 4: Rank ideas
     print("\n=== Step 5: Ranking Ideas ===")
     ranking_agent = RankingAgent(use_genai=args.use_genai, model=args.model)
-    ranked_ideas = ranking_agent.rank_ideas(
+    final_ranked_ideas = ranking_agent.rank_ideas(
         ideas=reviewed_ideas,
         proximity_matrix=proximity_matrix,
         experiment_content=experiment_content,
         research_goal=args.research_goal,
         num_matches=args.tournament_matches
     )
-    print(f"Ranked {len(ranked_ideas)} ideas")
+    print(f"Ranked {len(final_ranked_ideas)} ideas")
     
-    # Step 5: Evolve top ideas
-    print("\n=== Step 6: Evolving Top Ideas ===")
-    evolution_agent = EvolutionAgent(use_genai=args.use_genai, model=args.model)
-    evolved_ideas = evolution_agent.evolve_ideas(
-        ideas=ranked_ideas,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal
-    )
-    print(f"Evolved {len(evolved_ideas)} ideas")
+    # # Step 5: Evolve top ideas
+    # print("\n=== Step 6: Evolving Top Ideas ===")
+    # evolution_agent = EvolutionAgent(use_genai=args.use_genai, model=args.model)
+    # evolved_ideas = evolution_agent.evolve_ideas(
+    #     ideas=ranked_ideas,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal
+    # )
+    # print(f"Evolved {len(evolved_ideas)} ideas")
     
-    # Step 6: Recalculate proximity including evolved ideas
-    print("\n=== Step 7: Recalculating Proximity with Evolved Ideas ===")
-    all_ideas = ranked_ideas + evolved_ideas
-    updated_proximity_matrix = proximity_agent.calculate_proximity(
-        ideas=all_ideas,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal
-    )
+    # # Step 6: Recalculate proximity including evolved ideas
+    # print("\n=== Step 7: Recalculating Proximity with Evolved Ideas ===")
+    # all_ideas = ranked_ideas
+    # updated_proximity_matrix = proximity_agent.calculate_proximity(
+    #     ideas=all_ideas,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal
+    # )
     
-    # Step 7: Final ranking
-    print("\n=== Step 8: Final Ranking ===")
-    final_ranked_ideas = ranking_agent.rank_ideas(
-        ideas=all_ideas,
-        proximity_matrix=updated_proximity_matrix,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal,
-        num_matches=args.tournament_matches
-    )
+    # # Step 7: Final ranking
+    # print("\n=== Step 8: Final Ranking ===")
+    # final_ranked_ideas = ranking_agent.rank_ideas(
+    #     ideas=all_ideas,
+    #     proximity_matrix=updated_proximity_matrix,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal,
+    #     num_matches=args.tournament_matches
+    # )
     
     # Step 8: Meta-review for final feedback
     print("\n=== Step 9: Meta-Review ===")
@@ -199,7 +234,7 @@ def main():
     )
     
     # Save the top ideas
-    save_ideas(finalized_ideas, args.experiment, args.idea_file, updated_proximity_matrix)
+    save_ideas(finalized_ideas, args.experiment, args.idea_file, proximity_matrix)
     
     # Print top ideas summary
     print("\n=== Top Ideas Generated ===")

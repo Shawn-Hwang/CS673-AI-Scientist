@@ -9,7 +9,7 @@ class DebateAgent(BaseAgent):
         super().__init__(use_genai, model)
         self.system_prompt = "You are facilitating a scientific debate among different research personas to improve machine learning research ideas."
     
-    def debate_ideas(self, ideas, experiment_content, research_goal):
+    def debate_ideas(self, ideas, experiment_content, research_goal, temperature):
         """Simulate debates for each idea and return improved ideas"""
         debated_ideas = []
         
@@ -37,14 +37,15 @@ class DebateAgent(BaseAgent):
                 original_persona=original_persona,
                 critic_personas=other_personas[:2],  # Limit to 2 critics for brevity
                 experiment_content=experiment_content,
-                research_goal=research_goal
+                research_goal=research_goal,
+                temperature=temperature
             )
             
             debated_ideas.append(debated_idea)
         
         return debated_ideas
     
-    def debate_idea(self, idea, original_persona, critic_personas, experiment_content, research_goal):
+    def debate_idea(self, idea, original_persona, critic_personas, experiment_content, research_goal, temperature):
         """Run a debate for a single idea and return the improved idea"""
         # Prepare prompt for the debate
         prompt = self.prepare_prompt(
@@ -56,7 +57,7 @@ class DebateAgent(BaseAgent):
         )
         
         # Call LLM for the debate
-        response = self.call_llm(prompt, temperature=1.8)
+        response = self.call_llm(prompt, temperature=temperature)
         
         # Process response
         debated_idea = self.process_response(response, idea)

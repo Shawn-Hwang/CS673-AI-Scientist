@@ -12,17 +12,18 @@ class GenerationAgent(BaseAgent):
 
     def sample_personas(self, num_personas=3):
         """Sample personas for idea generation"""
-        # path = '/home/huang717/nobackup/archive/hf_datasets/PersonaHub/ElitePersona/elite_personas.part1.jsonl'
-        # df = pl.read_ndjson(path)
+        print(f"Sampling {num_personas} personas for idea generation")
+        path = '/home/huang717/nobackup/archive/hf_datasets/PersonaHub/ElitePersona/elite_personas.part1.jsonl'
+        df = pl.read_ndjson(path)
 
-        path = '/home/huang717/CS673-AI-Scientist/claude_made_coscientist/agents/sampled_elite_personas.csv'
-        df = pl.read_csv(path)
+        # path = '/home/huang717/CS673-AI-Scientist/claude_made_coscientist/agents/sampled_elite_personas.csv'
+        # df = pl.read_csv(path)
 
-        sampled_personas = df.sample(n=3).to_pandas()['persona'].to_list()
+        sampled_personas = df.sample(n=num_personas).to_pandas()['persona'].to_list()
         
         return sampled_personas
     
-    def generate_ideas(self, experiment_content, research_goal, skip_lit_review=False, num_ideas=5):
+    def generate_ideas(self, experiment_content, research_goal, skip_lit_review=False, num_ideas=5, temperature=1.0):
         """Generate initial ideas based on the experiment.py content"""
 
         # Prepare prompt
@@ -34,14 +35,14 @@ class GenerationAgent(BaseAgent):
         )
         
         # Call LLM
-        response = self.call_llm(prompt)
+        response = self.call_llm(prompt, temperature=temperature)
         
         # Process response
         ideas = self.process_response(response)
         
         return ideas
     
-    def generate_ideas_with_personas(self, experiment_content, research_goal, skip_lit_review=False, num_ideas=5):
+    def generate_ideas_with_personas(self, experiment_content, research_goal, skip_lit_review=False, num_ideas=5, temperature=1.0):
         """Generate initial ideas based on the experiment.py content with personas"""
         idea_str_archive = []
         ideas = []
@@ -67,7 +68,7 @@ class GenerationAgent(BaseAgent):
                 )
 
                 # Call LLM
-                response = self.call_llm(prompt,temperature=1.8)
+                response = self.call_llm(prompt,temperature=temperature)
                 # print(f"Response: {response}")
                 
                 # Process response
