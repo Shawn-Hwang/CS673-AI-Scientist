@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "softfold_layer_placement",
+        "Title": "Strategic Placement of SoftFold Layers in PPO Actor and Critic Networks",
+        "Experiment": "Modify the `Agent` class to explore different placements of the SoftFold layers within the actor and critic networks. Specifically, create several different architectures:\n\n1.  *Ablation Study*: Remove all SoftFold layers from both the actor and critic networks. This serves as a baseline without the soft fold mechanism.\n2.  *SoftFold in Actor Only*: Include SoftFold layers only in the actor network, removing them from the critic network.\n3.  *SoftFold in Critic Only*: Include SoftFold layers only in the critic network, removing them from the actor network.\n4.  *SoftFold Before Tanh*: Swap the order of the SoftFold and Tanh layers in the existing architecture in both actor and critic networks.\n\nFor each architecture, run the PPO algorithm with the same hyperparameters as the baseline and record the performance metrics (episodic return, training time, etc.). Compare the results across different architectures to determine the strategic placement of the SoftFold layers. Use the same multiprocessing setup as the base experiment to ensure that these multiple configurations are run and evaluated. Track the number of parameters for each configuration, as well as the training time and performance metrics (reward, gradient norms, etc.).",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Persona": "An Irish-American woman who is fascinated by the history and culture of her heritage, particularly the language and dialects of her homeland. She is interested in linguistics and has a deep understanding of the Irish language, its origins, and its usage in everyday speech. She is also curious about the history of the word \"kybosh\" and its usage in Irish culture, and she enjoys exploring these topics through research and writing. She is open-minded and curious, and she enjoys learning new things about the world and her heritage.",
+        "Idea number": 3
+    },
+    {
+        "Name": "learnable_sigmoid_steepness",
+        "Title": "Learnable Sigmoid Steepness in Soft Fold Layers: Controlling Curvature Adaptively",
+        "Experiment": "Modify the SoftFold layer to learn the steepness of the sigmoid function. Replace the `crease` parameter with a learnable `steepness` parameter that multiplies the input 'p' to the sigmoid function. Initialize the `steepness` parameter to a reasonable value (e.g., 1.0). Remove the `crease` parameter from the `__init__` function. In the forward function, replace `p = self.crease * (x_dot_n - n_dot_n)` with `p = self.steepness * (x_dot_n - n_dot_n)`. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed sigmoid function. Track the value of the `steepness` parameter during training. Also, plot the sigmoid function with different values of `steepness` to visualize the effect of the learned steepness on the folding behavior.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A birdwatcher who enjoys observing the behavior and migration patterns of finches, particularly pine grosbeaks, evening grosbeaks, pine siskins, redpolls, and other winter finches. This individual is likely to be interested in tracking the behavior of these birds and understanding how they adapt to changing environmental conditions, including the impact of climate change and the spread of invasive species. They may also be interested in studying the interactions between finches and other species, such as squirrels and other birds of prey.",
+        "Idea number": 4
+    },
+    {
+        "Name": "fixed_weight_hyperplane_combination",
+        "Title": "Fixed-Weight Hyperplane Combination in Soft Fold Layers: A Simplified Approach to Representation Learning",
+        "Experiment": "Modify the SoftFold layer to project the input onto multiple hyperplanes and combine the resulting folded tensors with fixed weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. For each hyperplane, compute the projection and soft folding operation. Assign fixed weights to each hyperplane (e.g., equal weights or randomly initialized weights). Compute the weighted sum of the folded tensors using these fixed weights. Experiment with different values for num_hyperplanes (e.g., 2, 4, 8) and different weighting schemes. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "A sleep specialist who is knowledgeable about the relationship between snoring and high blood pressure, the causes and effects of sleep-disordered breathing, and the differences between snoring and sleep apnea. They are interested in the potential health consequences of untreated sleep-disordered breathing and are looking for evidence-based information to inform their practice and patient care. They are also interested in the latest research and developments in the field of sleep medicine.",
+        "Idea number": 5
+    },
+    {
+        "Name": "parallel_softfold_mlp_reduced_dim",
+        "Title": "Parallel SoftFold Layers with MLP Combination and Dimensionality Reduction: Parameter-Efficient Representation Learning",
+        "Experiment": "Modify the Agent class to incorporate parallel SoftFold layers within the actor and critic networks. Instead of replacing the existing SoftFold layers, add a ParallelSoftFold layer in parallel to each existing SoftFold layer. The ParallelSoftFold layer will consist of 'num_folds' SoftFold layers, each with its own independently learned parameters (n, crease, stretch). After each SoftFold layer, add a linear layer that reduces the dimensionality of the output from 'width' to 'reduced_width', where reduced_width is a hyperparameter (e.g., width/2). The forward pass of the ParallelSoftFold layer will compute the output of each SoftFold layer, followed by the dimensionality reduction layer. The outputs of the 'num_folds' dimensionality reduction layers are then combined using a small multi-layer perceptron (MLP). The MLP will consist of two linear layers with a Tanh activation in between. The input dimension of the MLP will be num_folds * reduced_width, and the output dimension will be width. The output of the MLP is then added to the output of the original SoftFold layer. Experiment with different values for num_folds (e.g., 2, 4, 8) and reduced_width (e.g., width/2, width/4). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Track the learned parameters of the MLP and the dimensionality reduction layers to understand how the parallel SoftFold outputs are being combined.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A fish enthusiast who is passionate about keeping guppies and is willing to go to great lengths to ensure their well-being. They understand the importance of setting up their aquarium correctly and taking care of the water to keep their fish healthy. They are meticulous in their handling and transfer process and avoid transferring their fish to new tanks too often. They are aware of the factors that can affect the health of their fish and take steps to prevent stress and illness. They are knowledgeable about the needs of guppies and understand the importance of breeding and the potential for limited growth due to new tank conditions. They are also aware of the importance of proper water care and filtering, and take care to ensure that the tank is clean and well-filtered.",
+        "Idea number": 6
+    },
+    {
+        "Name": "input_dependent_crease",
+        "Title": "Input-Dependent Crease in Soft Fold Layers: Enhancing Adaptability with Dynamic Curvature Control",
+        "Experiment": "Modify the SoftFold layer to make the crease parameter input-dependent. Replace the single `crease` parameter with a small neural network (e.g., a single linear layer) that takes the input tensor as input and outputs a single value representing the crease offset. In the `__init__` function of the SoftFold layer, replace the `crease` parameter with a linear layer: `self.crease_predictor = nn.Linear(width, 1)`. Also, add a base crease value: `self.base_crease = nn.Parameter(torch.tensor(1.0))`. In the `forward` function, compute the crease offset using the input tensor: `crease_offset = torch.tanh(self.crease_predictor(input_tensor))`. Compute the final crease value: `crease = self.base_crease + crease_offset`. Ensure the final crease value is positive by using `crease = F.relu(crease) + 0.001`. Use this dynamically predicted `crease` value in the subsequent calculations: `p = crease * (x_dot_n - n_dot_n)`. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learnable `crease` parameter. Track the distribution of the predicted `crease` values during training.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A professor who is passionate about teaching and learning, and is dedicated to fostering critical thinking skills among students. This person is skilled in textual analysis and has a deep understanding of the importance of careful, close reading of primary sources. They are also skilled in argumentation, written expression, and communication, and are able to relate course material to real-life situations. Additionally, this person is interested in introducing students to important traditions of thought and is able to relate course material to real-life situations, encouraging students to become aware of and question unexamined assumptions and values.",
+        "Idea number": 7
+    },
+    {
+        "Name": "sequential_softfold_module",
+        "Title": "Sequential SoftFold Module: Flexible Hierarchical Folding with Regularization",
+        "Experiment": "1. Create a new `SequentialSoftFold` module that inherits from `nn.Module`. This module will take `num_folds` as a hyperparameter.\n2. Inside `SequentialSoftFold`, create a sequence of `SoftFold(width)` layers, where `width` is the input dimension. Add a `Tanh` activation after each SoftFold layer, except for the last one. This avoids excessive constraint on the final output.\n3. Modify the `Agent` class to replace the existing single `SoftFold` layer with the new `SequentialSoftFold` module. Specifically, replace `SoftFold(64)` with `SequentialSoftFold(64, num_folds)`, where `num_folds` is a hyperparameter.\n4. Add L2 regularization to the loss function. Calculate the L2 norm of all parameters in the `SequentialSoftFold` module and add a regularization term to the overall loss: `loss = loss + args.l2_reg * l2_norm`, where `args.l2_reg` is a new hyperparameter controlling the strength of the regularization.\n5. Experiment with different values for `num_folds` (e.g., 2, 3, 4) and `args.l2_reg` (e.g., 1e-5, 1e-4, 1e-3) and compare the training dynamics, convergence speed, and final performance with the baseline model. Track the learned parameters of each SoftFold layer in the sequence to understand how the hierarchical folding is being learned. Plot the L2 norm of the parameters during training to monitor the effect of the regularization.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A scientist and astronomer who specializes in the study of exoplanets and their formation, particularly the use of new techniques such as the Doppler shift to detect newborn planets orbiting young stars. This scientist is skilled in the use of advanced telescopes and equipment, such as ALMA, and is dedicated to furthering our understanding of the formation of planets and the mysteries of the universe.",
+        "Idea number": 8
+    },
+    {
+        "Name": "data_dependent_initialization",
+        "Title": "Data-Dependent Initialization of Soft Fold Layers: Aligning Hyperplanes with Input Data Distribution for Enhanced Learning",
+        "Experiment": "Modify the SoftFold layer to incorporate a data-dependent initialization strategy for the normal vector 'n'.\n\n1.  *Collect Initial Data*: Before the main training loop, run the agent in the environment for a fixed number of steps (e.g., 1000 timesteps) using a random policy. Store the observations encountered during this exploration phase in a buffer.\n2.  *Calculate the Mean*: After collecting the initial data, calculate the mean of the collected observations. \n3.  *Add Perturbation*: Add a small random perturbation to the mean vector. The perturbation can be sampled from a normal distribution with a small standard deviation (e.g., 0.01).\n4.  *Normalize n*: Normalize the resulting vector 'n' to ensure it has unit length.\n5.  *Replace Random Initialization*: Replace the random initialization of 'n' in the `__init__` function of the SoftFold layer with this data-dependent initialization using the perturbed mean.\n6.  *Compare Performance*: Compare the training dynamics, convergence speed, and final performance with the baseline model using random initialization of 'n'.\n\nTo implement this, modify the `run_experiment` function to include the data collection and mean calculation steps before the main training loop. Modify the `SoftFold` class to accept the pre-computed 'n' as an argument during initialization.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "A software developer who is passionate about the development of new and modern tools and technologies. They are particularly interested in the use of interactive development environments, such as Jupyter notebooks and MATLAB, and are seeking to create a new and powerful Fortran compiler that can be used alongside these tools. They are looking for a way to make Fortran more accessible and attractive to developers, while also ensuring that the compiler can handle the latest Fortran standards and provide the necessary performance and interactivity. The development of such a compiler would likely attract a community of developers and users who are interested in exploring and experimenting with new and innovative tools.",
+        "Idea number": 9
+    },
+    {
+        "Name": "softfold_hyperplane_regularization",
+        "Title": "SoftFold Hyperplane Regularization: Enhancing Stability and Generalization in PPO",
+        "Experiment": "Modify the training loop to incorporate a regularization term that penalizes large norms of the normal vector 'n' and encourages the normal vector to be aligned with the input data.\n\n1.  *Norm Regularization*: Add a term to the loss function that penalizes the squared L2 norm of the normal vector 'n' in each SoftFold layer: `loss = loss + args.norm_reg_coef * (self.n @ self.n)`. 'args.norm_reg_coef' is a new hyperparameter controlling the strength of the norm regularization.\n2. *Alignment Regularization*: Calculate the dot product between the normal vector 'n' and the input tensor `input_tensor` in the forward pass of the SoftFold layer. Add a penalty term to the loss function that encourages this dot product to be non-zero: `loss = loss - args.alignment_reg_coef * torch.mean(input_tensor @ self.n)`. 'args.alignment_reg_coef' is a new hyperparameter controlling the strength of the alignment regularization. Average the dot product across the batch.\n3.  *Add Hyperparameters*: Add 'norm_reg_coef' and 'alignment_reg_coef' to the Args class.\n4.  *Compare Performance*: Experiment with different values for 'norm_reg_coef' (e.g., 1e-5, 1e-4, 1e-3) and 'alignment_reg_coef' (e.g., 1e-5, 1e-4, 1e-3) and compare the training dynamics, convergence speed, and final performance with the baseline model without hyperplane regularization. Track the norms of the normal vectors and the dot product between the normal vectors and the input during training.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A public health official who is responsible for managing a healthcare program related to HIV/AIDS and has experience in managing grants, data management, and quality improvement processes. They have a strong background in HIV/AIDS patient care and have participated in the IHI collaborative partnership to improve the quality of care provided to patients with HIV/AIDS. They have a passion for performance improvement and have implemented small changes in policies and procedures to measure the results and provide feedback to staff. They are dedicated to maintaining the system-wide improvement and have hired a full-time quality manager to support the process. They are interested in using the Chronic Care Model to make comprehensive and widespread changes in the healthcare system.",
+        "Idea number": 10
+    }
+]

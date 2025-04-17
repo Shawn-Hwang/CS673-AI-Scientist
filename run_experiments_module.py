@@ -28,8 +28,8 @@ For reference, the baseline results are as follows:
 
 {baseline_results}
 
-Include any additional learnable parameters inside the Agent module. 
-After you complete each change, we will run the command `python experiment.py --out_dir={idea_name}' and evaluate the results.
+Include any additional learnable parameters inside the Agent module. Make all the necessary changes in one iteration. 
+After you complete the changes, we will run the command `python experiment.py --out_dir={idea_name}' and evaluate the results.
 YOUR PROPOSED CHANGE MUST USE THIS COMMAND FORMAT, DO NOT ADD ADDITIONAL COMMAND LINE ARGS."""
 
 def run_experiment(folder_name, idea_name, timeout=7200):
