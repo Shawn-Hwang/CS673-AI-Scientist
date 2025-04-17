@@ -67,11 +67,17 @@ class GenerationAgent(BaseAgent):
                 )
 
                 # Call LLM
-                response = self.call_llm(prompt)
+                response = self.call_llm(prompt,temperature=1.8)
+                # print(f"Response: {response}")
                 
                 # Process response
-                idea = self.process_response(response)
+                idea = self.process_response(response)[0]
                 idea['Persona'] = persona_description
+
+                # print("****************************************************************")
+                # print(f"Processed idea: {idea}, type: {type(idea)}")
+                # print("****************************************************************")
+
                 ideas.append(idea)
 
                 idea_str_archive.append(json.dumps(idea))
@@ -191,7 +197,12 @@ class GenerationAgent(BaseAgent):
             # Try to extract JSON from the response
             ideas_json = self.extract_json(response)
             
+            
             if ideas_json:
+                # Convert to list if a single idea was returned (not in a list)
+                if isinstance(ideas_json, dict):
+                    ideas_json = [ideas_json]
+
                 # Ensure each idea has the required fields and initialize ELO rating
                 for i, idea in enumerate(ideas_json):
                     if "Name" not in idea:

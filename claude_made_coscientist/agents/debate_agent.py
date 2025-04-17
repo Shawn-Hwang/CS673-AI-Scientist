@@ -56,7 +56,7 @@ class DebateAgent(BaseAgent):
         )
         
         # Call LLM for the debate
-        response = self.call_llm(prompt)
+        response = self.call_llm(prompt, temperature=1.8)
         
         # Process response
         debated_idea = self.process_response(response, idea)

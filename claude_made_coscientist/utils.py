@@ -55,32 +55,85 @@ def call_llm(prompt, model="gemini-2.0-flash", temperature=0.7, use_genai=True, 
         print(f"Error calling Google Generative AI API: {e}")
         return f"Error: {str(e)}"
 
+# def extract_json_from_text(text):
+#     """Extract JSON object from text response"""
+#     try:
+#         # First, try to find JSON between triple backticks
+#         json_match = re.search(r"```json\n(.*?)```", text, re.DOTALL)
+#         if json_match:
+#             json_str = json_match.group(1)
+#             return json.loads(json_str)
+        
+#         # Second, try to find JSON between single backticks
+#         json_match = re.search(r"`(.*?)`", text, re.DOTALL)
+#         if json_match:
+#             json_str = json_match.group(1)
+#             return json.loads(json_str)
+        
+#         # Third, try to find JSON-like structure without backticks
+#         json_match = re.search(r"\{.*\}", text, re.DOTALL)
+#         if json_match:
+#             json_str = json_match.group(0)
+#             return json.loads(json_str)
+        
+#         # Try to parse the entire response as JSON
+#         return json.loads(text)
+#     except Exception as e:
+#         print(f"Error extracting JSON from text: {e}")
+#         return None
+
 def extract_json_from_text(text):
-    """Extract JSON object from text response"""
+    """Extract JSON object from text response with improved error handling"""
     try:
         # First, try to find JSON between triple backticks
-        json_match = re.search(r"```json\n(.*?)```", text, re.DOTALL)
+        json_match = re.search(r"```(?:json)?\n([\s\S]*?)```", text, re.DOTALL)
         if json_match:
-            json_str = json_match.group(1)
-            return json.loads(json_str)
+            json_str = json_match.group(1).strip()
+            try:
+                # print("***********************************************************************************")
+                # print(f"Extracted JSON: {json.loads(json_str)}")
+                # print("***********************************************************************************")
+                
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse JSON within backticks: {e}")
+                # Try to fix common JSON issues
+                fixed_json_str = fix_json_string(json_str)
+                return json.loads(fixed_json_str)
         
-        # Second, try to find JSON between single backticks
-        json_match = re.search(r"`(.*?)`", text, re.DOTALL)
+        # Second, try to find JSON-like structure without backticks
+        # This looks for anything that might be a JSON object or array
+        json_match = re.search(r"(\[[\s\S]*\]|\{[\s\S]*\})", text, re.DOTALL)
         if json_match:
-            json_str = json_match.group(1)
-            return json.loads(json_str)
+            json_str = json_match.group(1).strip()
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse JSON without backticks: {e}")
+                # Try to fix common JSON issues
+                fixed_json_str = fix_json_string(json_str)
+                return json.loads(fixed_json_str)
         
-        # Third, try to find JSON-like structure without backticks
-        json_match = re.search(r"\{.*\}", text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group(0)
-            return json.loads(json_str)
-        
-        # Try to parse the entire response as JSON
-        return json.loads(text)
+        print("No JSON structure found in response")
+        return None
     except Exception as e:
         print(f"Error extracting JSON from text: {e}")
         return None
+
+def fix_json_string(json_str):
+    """Apply common fixes to JSON strings that might cause parsing errors"""
+    # Replace unescaped quotes in strings
+    fixed = re.sub(r'(?<!\\)"(.*?)(?<!\\)"(?=:)', r'"\1"', json_str)
+    
+    # Fix common issues with newlines in strings
+    fixed = fixed.replace('\n', '\\n')
+    
+    # Handle potential trailing commas in arrays and objects
+    fixed = re.sub(r',\s*}', '}', fixed)
+    fixed = re.sub(r',\s*]', ']', fixed)
+    
+    print(f"Attempted to fix JSON string, length: {len(fixed)}")
+    return fixed
 
 def calculate_elo_update(rating1, rating2, result, k=32):
     """Calculate Elo rating updates"""

@@ -11,6 +11,7 @@ from agents.ranking_agent import RankingAgent
 from agents.evolution_agent import EvolutionAgent
 from agents.meta_review_agent import MetaReviewAgent
 from agents.proximity_agent import ProximityAgent
+from agents.debate_agent import DebateAgent
 from utils import setup_genai_api
 
 def parse_arguments():
@@ -69,7 +70,7 @@ def parse_arguments():
 
 def load_experiment_file(experiment_name):
     """Load the experiment.py file content"""
-    experiment_path = osp.join("templates", experiment_name, "experiment.py")
+    experiment_path = osp.join("../templates", experiment_name, "experiment.py")
     if not osp.exists(experiment_path):
         raise FileNotFoundError(f"Experiment file not found at {experiment_path}")
     
@@ -80,7 +81,7 @@ def load_experiment_file(experiment_name):
 
 def save_ideas(ideas, experiment_name, idea_file, proximity_matrix=None):
     """Save generated ideas to a JSON file"""
-    output_path = osp.join("templates", experiment_name, idea_file)
+    output_path = osp.join("../templates", experiment_name, idea_file)
     os.makedirs(osp.dirname(output_path), exist_ok=True)
     
     with open(output_path, "w") as f:
@@ -108,7 +109,7 @@ def main():
     # Step 1: Generate initial ideas
     print("\n=== Step 1: Generating Initial Ideas ===")
     generation_agent = GenerationAgent(use_genai=args.use_genai, model=args.model)
-    initial_ideas = generation_agent.generate_ideas(
+    initial_ideas = generation_agent.generate_ideas_with_personas(
         experiment_content=experiment_content,
         research_goal=args.research_goal,
         skip_lit_review=args.skip_lit_review,
@@ -125,12 +126,13 @@ def main():
         research_goal=args.research_goal
     )
     print(f"Debated {len(debated_ideas)} ideas")
+    # save_ideas(debated_ideas, args.experiment, 'debate_notes.json')
     
     # Step 2: Review ideas
     print("\n=== Step 3: Reviewing Ideas ===")
     reflection_agent = ReflectionAgent(use_genai=args.use_genai, model=args.model)
     reviewed_ideas = reflection_agent.review_ideas(
-        ideas=initial_ideas,
+        ideas=debated_ideas,
         experiment_content=experiment_content,
         research_goal=args.research_goal
     )
