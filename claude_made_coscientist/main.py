@@ -115,9 +115,19 @@ def main():
         num_ideas=args.num_ideas
     )
     print(f"Generated {len(initial_ideas)} initial ideas")
+
+    # Step 2: Debate ideas
+    print("\n=== Step 2: Debating Ideas ===")
+    debate_agent = DebateAgent(use_genai=args.use_genai, model=args.model)
+    debated_ideas = debate_agent.debate_ideas(
+        ideas=initial_ideas,
+        experiment_content=experiment_content,
+        research_goal=args.research_goal
+    )
+    print(f"Debated {len(debated_ideas)} ideas")
     
     # Step 2: Review ideas
-    print("\n=== Step 2: Reviewing Ideas ===")
+    print("\n=== Step 3: Reviewing Ideas ===")
     reflection_agent = ReflectionAgent(use_genai=args.use_genai, model=args.model)
     reviewed_ideas = reflection_agent.review_ideas(
         ideas=initial_ideas,
@@ -127,7 +137,7 @@ def main():
     print(f"{len(reviewed_ideas)} ideas passed review")
     
     # Step 3: Calculate proximity between ideas
-    print("\n=== Step 3: Calculating Idea Proximity ===")
+    print("\n=== Step 4: Calculating Idea Proximity ===")
     proximity_agent = ProximityAgent(use_genai=args.use_genai, model=args.model)
     proximity_matrix = proximity_agent.calculate_proximity(
         ideas=reviewed_ideas,
@@ -137,7 +147,7 @@ def main():
     print(f"Calculated proximity for {len(reviewed_ideas)} ideas")
     
     # Step 4: Rank ideas
-    print("\n=== Step 4: Ranking Ideas ===")
+    print("\n=== Step 5: Ranking Ideas ===")
     ranking_agent = RankingAgent(use_genai=args.use_genai, model=args.model)
     ranked_ideas = ranking_agent.rank_ideas(
         ideas=reviewed_ideas,
@@ -149,7 +159,7 @@ def main():
     print(f"Ranked {len(ranked_ideas)} ideas")
     
     # Step 5: Evolve top ideas
-    print("\n=== Step 5: Evolving Top Ideas ===")
+    print("\n=== Step 6: Evolving Top Ideas ===")
     evolution_agent = EvolutionAgent(use_genai=args.use_genai, model=args.model)
     evolved_ideas = evolution_agent.evolve_ideas(
         ideas=ranked_ideas,
@@ -159,7 +169,7 @@ def main():
     print(f"Evolved {len(evolved_ideas)} ideas")
     
     # Step 6: Recalculate proximity including evolved ideas
-    print("\n=== Step 6: Recalculating Proximity with Evolved Ideas ===")
+    print("\n=== Step 7: Recalculating Proximity with Evolved Ideas ===")
     all_ideas = ranked_ideas + evolved_ideas
     updated_proximity_matrix = proximity_agent.calculate_proximity(
         ideas=all_ideas,
@@ -168,7 +178,7 @@ def main():
     )
     
     # Step 7: Final ranking
-    print("\n=== Step 7: Final Ranking ===")
+    print("\n=== Step 8: Final Ranking ===")
     final_ranked_ideas = ranking_agent.rank_ideas(
         ideas=all_ideas,
         proximity_matrix=updated_proximity_matrix,
@@ -178,7 +188,7 @@ def main():
     )
     
     # Step 8: Meta-review for final feedback
-    print("\n=== Step 8: Meta-Review ===")
+    print("\n=== Step 9: Meta-Review ===")
     meta_review_agent = MetaReviewAgent(use_genai=args.use_genai, model=args.model)
     finalized_ideas = meta_review_agent.finalize_ideas(
         ideas=final_ranked_ideas, # [:min(args.num_ideas, len(final_ranked_ideas))]
@@ -199,4 +209,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# Example usage: python main.py --experiment experiment_name --num_ideas 5 --use_genai --model gemini-2.0-flash
+# Example usage: python main.py --experiment experiment_name --num_ideas 3 --use_genai --model gemini-2.0-flash
