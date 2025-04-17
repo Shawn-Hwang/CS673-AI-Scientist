@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "weighted_prototype_softfold",
+        "Title": "Weighted Prototype-Modulated SoftFold Layers: Adaptive Combination of Directional Prototypes in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple learnable prototype vectors. Replace the single normal vector 'n' with a learnable matrix 'P' of shape (num_prototypes, width), where num_prototypes is a hyperparameter. In the forward pass, compute the cosine similarity between the input tensor and each prototype vector in 'P'. Use these similarities to modulate the crease and stretch parameters of each prototype's folding operation. Specifically, scale the original crease and stretch parameters by the similarity score for each prototype. Perform the soft folding operation for each prototype using these adjusted parameters, resulting in 'num_prototypes' output vectors. Introduce a learnable weight for each prototype's output. Implement these weights as a linear layer with 'num_prototypes' inputs followed by a softmax activation. Multiply each prototype output vector by its corresponding weight, and sum the resulting weighted output vectors. Experiment with different values for num_prototypes (e.g., 2, 4, 8) and different similarity measures (e.g., RBF kernel). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single normal vector.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A history enthusiast who is deeply interested in the exploration and discovery of the Arctic region, particularly the Franklin Expedition. They have a particular fascination with the cairns and the documents found on the expedition, and are eager to learn more about the men who perished in the search for the Northwest Passage. They are also likely to be a researcher or a historian who is passionate about uncovering the truth behind the expedition and the fate of the men who perished.",
+        "Idea number": 3
+    },
+    {
+        "Name": "input_dependent_crease",
+        "Title": "Input-Dependent Crease Modulation in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to dynamically adjust the crease parameter based on the input tensor. Replace the single linear layer in the crease scaling network with a two-layer neural network (e.g., linear-ReLU-linear-Tanh). The first linear layer will take the input tensor as input and output a hidden representation. This will be followed by a ReLU activation function. The second linear layer will take the hidden representation as input and output a scaling factor for the existing crease parameter. The final layer will use a Tanh activation function. The forward pass will compute the output of this network and multiply it with the original crease parameter. The adjusted crease parameter will then be used in the subsequent calculations within the SoftFold layer. Experiment with different hidden layer sizes. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed crease.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A woman who fought against racism and inequality to provide education to Black children in California during the 1800s, despite facing obstacles and discrimination. Her refusal to allow racism to keep her children uneducated opened educational opportunities for Black students across the state. Despite her death, her legacy inspired others to fight for justice and equality in education.",
+        "Idea number": 4
+    },
+    {
+        "Name": "weighted_sum_multiple_hyperplanes",
+        "Title": "Soft Fold Layers with Weighted Sum of Multiple Fixed Hyperplanes: Enhancing Representation Capacity in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple fixed hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. In the forward pass, compute the soft fold operation for each hyperplane in 'N', resulting in 'num_hyperplanes' output tensors. Introduce a linear layer that takes the original input tensor as input and outputs a weight vector of shape (num_hyperplanes,). Use these weights to compute a weighted sum of the output tensors from the soft folds. Experiment with different values for num_hyperplanes (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single normal vector.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A researcher and educator who is skeptical about the Learning Pyramid model, especially its historical origins and inconsistencies with current research findings. They are interested in learning styles, brain function, and the effectiveness of different teaching methods. They are also critical of the idea that intelligence is fixed at birth and that memorization is the only way to learn. They are interested in alternative learning theories and techniques, such as the 10,000-hour rule and the idea that learning is not linear. They are open to alternative teaching methods and resources, and are critical of the idea that cramming is an effective revision strategy. They are also interested in the role of storytelling in learning and the idea that performance is a sign of learning.",
+        "Idea number": 5
+    },
+    {
+        "Name": "weighted_ensemble_softfold",
+        "Title": "Weighted Ensemble of SoftFold Layers: Enhancing Representation Capacity with Learnable Weights in PPO",
+        "Experiment": "Modify the Agent class to incorporate a weighted ensemble of SoftFold layers. Replace the existing SoftFold layers in both the actor and critic networks with 'num_folds' SoftFold layers, where 'num_folds' is a hyperparameter. Each SoftFold layer will have its own independently learned normal vector 'n', crease, and stretch parameters. Introduce a learnable weight vector of shape (num_folds,). These weights will be implemented as nn.Parameter and initialized randomly. In the forward pass of the Agent, compute the output of each SoftFold layer in the ensemble. Then, multiply each SoftFold layer's output by its corresponding weight from the learnable weight vector. Sum the resulting weighted outputs to obtain the final output of the ensemble. Experiment with different values for 'num_folds' (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "This text is likely to be read by a business owner or manager who is looking to improve their Excel skills and increase their productivity in their business. They may be looking for tips and tricks to make their work more efficient and effective.",
+        "Idea number": 6
+    },
+    {
+        "Name": "input_modulated_softfold",
+        "Title": "Input-Modulated SoftFold Layer: Adaptive Folding with Input-Dependent Crease and Stretch in PPO",
+        "Experiment": "Modify the SoftFold layer to dynamically adjust the crease and stretch parameters based on the input tensor. Introduce a modulation network that takes the input tensor as input and outputs scaling factors for the crease and stretch parameters. This modulation network will consist of two linear layers (linear-ReLU-linear-Tanh) for each parameter (crease and stretch), resulting in four linear layers in total. The first linear layer for each parameter will take the input tensor as input and output a hidden representation. This will be followed by a ReLU activation function. The second linear layer will take the hidden representation as input and output a scaling factor for the corresponding parameter (crease or stretch). The final layer will use a Tanh activation function. The forward pass will compute the outputs of these networks and multiply them with the original crease and stretch parameters, respectively. The adjusted crease and stretch parameters will then be used in the subsequent calculations within the SoftFold layer. Experiment with different hidden layer sizes. Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed crease and stretch.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A researcher in the field of poultry biology and virology, particularly focused on the study of avian influenza viruses. This individual has expertise in the development and evaluation of poultry vaccines, as well as the detection and analysis of avian influenza viruses in poultry and human populations. They have published research on the efficacy of commercial avian influenza vaccines against circulating viruses in Egypt, and are advocating for a review of the H5N1 prevention and control strategy in Egypt.",
+        "Idea number": 7
+    },
+    {
+        "Name": "concatenated_state_and_input_dependent_crease",
+        "Title": "Concatenated State and Input-Dependent Crease Modulation in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to dynamically adjust the crease parameter based on both the input tensor and the agent's state. Introduce two separate modulation networks: one for the input tensor and one for the agent's state (represented by the hidden activations of the preceding layers). Save the output of the previous layer in the Agent class. The agent state modulation network will consist of a linear layer to reduce the dimensionality of the hidden activations, followed by a Tanh activation function. The input modulation network will consist of a linear layer followed by a Tanh activation function. Concatenate the outputs of the two modulation networks. Feed the concatenated output into a single linear layer that outputs the final scaling factor for the crease parameter. The forward pass will compute the outputs of these networks, concatenate them, and then pass the result through the final linear layer to obtain the scaling factor. This scaling factor will then be multiplied with the original crease parameter. The adjusted crease parameter will then be used in the subsequent calculations within the SoftFold layer. Experiment with different hidden layer sizes in the modulation networks. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed crease.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A psychologist who advocates for the importance of mental health and actively works to reduce the stigma associated with mental illness. They are passionate about serving their patients and community, and believe that mental health matters to everyone, regardless of their personal experiences. They are knowledgeable about the complex psychological, social, and biological bases of mental illness and the diverse treatments available. They are committed to using evidence-based practices and compassionate care to help their patients achieve recovery.",
+        "Idea number": 8
+    },
+    {
+        "Name": "gated_softfold_transformed_input",
+        "Title": "Gated SoftFold Layers with Transformed Input: Adaptive Feature Transformation with Gating on Higher-Level Representations in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate a gating mechanism. Add a linear layer followed by a sigmoid activation function to the SoftFold class. This linear layer will take the *transformed* input from the preceding linear layer in the actor/critic network as input and output a single value. Add a small bias to the output of the linear layer before the sigmoid activation. Pass this value through the sigmoid activation function to obtain a gate value between 0 and 1. In the forward pass, multiply the output of the original SoftFold operation by the gate value. Compare the training dynamics, convergence speed, and final performance with the baseline model without the gating mechanism.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A zoo veterinarian who specializes in cheetah care, particularly in emergency procedures and the management of high-risk pregnancies. She has extensive experience working with cheetahs and has a passion for conservation biology. She is dedicated to the welfare of the cheetah species and is committed to ensuring that the cubs are given the best possible care and a future in the wild. She is skilled in surgical procedures and has a keen eye for identifying the unique characteristics of cheetahs.",
+        "Idea number": 9
+    },
+    {
+        "Name": "vonmisesfisher_modulated_crease",
+        "Title": "SoftFold Layers with von Mises-Fisher Modulated Crease: Adaptive Folding Strength in PPO",
+        "Experiment": "Modify the SoftFold layer to use the mean direction of a von Mises-Fisher (vMF) distribution as the normal vector 'n' and modulate the crease parameter with the concentration parameter 'kappa'. Replace the single normal vector 'n' with two learnable parameters: a mean direction vector 'mu' (of the same dimension as the input) and a concentration parameter 'kappa' (a scalar). The 'mu' vector will represent the mean direction of the vMF distribution, and 'kappa' will control the concentration around the mean direction. Normalize 'mu' to have unit length. In the forward pass, use 'mu' directly as the normal vector 'n' in the SoftFold operation. Multiply the original crease parameter by a function of 'kappa' (e.g., sigmoid(kappa), tanh(kappa), or simply kappa itself). The adjusted crease parameter will then be used in the subsequent calculations within the SoftFold layer. Experiment with different initial values for 'kappa' (e.g., 0, 1, 10) and different functions to modulate the crease parameter. Also experiment with making kappa input-dependent by introducing a small neural network that takes the input tensor as input and outputs a scaling factor for kappa. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n' and fixed crease.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "Dr. Jeff Masters, a meteorologist known for his expertise in weather forecasting, particularly tropical storms and hurricanes. He is the founder of Wunderground, a weather data and analysis platform, and has extensive experience in weather modeling and forecasting. His blog is frequented by enthusiasts and professionals in the field, and he is known for his detailed and informative posts on weather conditions and forecasts.",
+        "Idea number": 10
+    }
+]

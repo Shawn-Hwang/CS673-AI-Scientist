@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "state_dependent_crease_modulation",
+        "Title": "State-Dependent Crease Modulation in Soft Fold Layers: Enhancing Adaptability in PPO with Dynamic Crease",
+        "Experiment": "Modify the SoftFold layer to include a state-dependent crease parameter. Create a small neural network (e.g., a single linear layer followed by ReLU activation and then a linear layer) that takes the input tensor as input and outputs a value that will be used to scale the crease parameter. Apply a sigmoid function to the output of the network to ensure it's bounded between 0 and 1. Multiply the original crease parameter (either learnable or fixed) by this scaled value to obtain the final crease value used in the forward pass. The forward pass will then use this dynamically predicted 'crease' value to compute the folding effect. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed or independently learned 'crease'. Specifically, the network will take the input tensor of shape (batch_size, width) and output a scaling factor for the crease parameter. The stretch parameter will remain fixed or independently learned.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "a passionate fan of K. M. Alexander's work",
+        "Idea number": 3
+    },
+    {
+        "Name": "state_dependent_crease_and_stretch_modulation",
+        "Title": "State-Dependent Crease and Stretch Modulation in Soft Fold Layers: Enhancing Adaptability in PPO with Correlated Dynamic Folding",
+        "Experiment": "Modify the SoftFold layer to include state-dependent crease and stretch parameters. Create a small neural network (e.g., a single linear layer followed by ReLU activation and then a linear layer) that takes the input tensor as input and outputs *two* values: one for scaling the crease parameter and one for scaling the stretch parameter. Apply a sigmoid function and scaling to each output to ensure they're bounded within reasonable ranges (e.g., 0 to 1 for the crease scaling factor and 0.5 to 2.5 for the stretch scaling factor). Multiply the original crease parameter (either learnable or fixed) by its scaled value to obtain the final crease value, and multiply the base stretch value (either learnable or fixed) by its scaled value to obtain the final stretch value. The forward pass will then use these dynamically predicted 'crease' and 'stretch' values to compute the folding effect. Experiment with different architectures for the scaling prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed or independently learned 'crease' and 'stretch'.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "I am a 1940s film enthusiast and historian.",
+        "Idea number": 4
+    },
+    {
+        "Name": "noisy_softfold_scalefactor",
+        "Title": "Noisy Soft Fold Layers: Enhancing Exploration by Perturbing the Scale Factor",
+        "Experiment": "Modify the SoftFold layer to inject Gaussian noise into the scale_factor before computing the folding effect. Implement a noise annealing schedule, where the noise level starts at a high value and linearly decreases to a low value over the course of training. Add 'noise_level_start' and 'noise_level_end' to the Args dataclass. Log the noise level during training. Compare the performance with the original SoftFold layer on LunarLander. Specifically, in the SoftFold's forward function, sample noise from a normal distribution with zero mean and a standard deviation of noise_level, and add it to the calculated scale_factor before calculating the residual vector.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "An older sister studying political science in college already working on a local campaign",
+        "Idea number": 5
+    },
+    {
+        "Name": "gatedmultisoftfold",
+        "Title": "Gated Multi-Layered Soft Fold: Input-Selective Folding for Enhanced Representation Learning",
+        "Experiment": "Implement a GatedMultiSoftFold layer that consists of a sequence of SoftFold layers and a gating network. Modify the Agent class to replace existing SoftFold layers with GatedMultiSoftFold layers. The gating network will be a single linear layer with a bias term followed by a sigmoid activation. It will take the input tensor as input and output a vector of weights, one for each SoftFold layer. These weights will be used to scale the output of each SoftFold layer before they are summed together. The forward pass of the GatedMultiSoftFold layer will then be: output = sum(weight[i] * SoftFold[i](input)) for i in range(num_folds). Experiment with different architectures for the gating network (e.g., adding a hidden layer, using different activation functions). Compare the performance with the baseline model and the MultiSoftFold model. Specifically, create a new class `GatedMultiSoftFold(nn.Module)` which takes an integer `num_folds` as input to its constructor. The constructor will instantiate `num_folds` `SoftFold` layers and store them in a `nn.ModuleList`, as well as the gating network (a linear layer followed by a sigmoid). The forward function will pass the input through the gating network to obtain the weights, then iterate through the module list and pass the input through each layer, scaling the output by the corresponding weight before summing them. The agent class will be modified to call `GatedMultiSoftFold` instead of `SoftFold`.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "a stay-at-home parent in Hong Kong who follows local television programs closely",
+        "Idea number": 6
+    },
+    {
+        "Name": "timedecaying_noisy_softfold_crease",
+        "Title": "Time-Decaying Noisy Soft Fold Layers: Enhancing Exploration by Perturbing the Crease Parameter",
+        "Experiment": "Modify the SoftFold layer to inject time-dependent Gaussian noise into the crease parameter before computing the folding effect. Implement a noise annealing schedule, where the noise level starts at a high value and linearly decreases to a low value over the course of training. Add 'noise_level_start' and 'noise_level_end' to the Args dataclass. Log the noise level during training. Compare the performance with the original SoftFold layer on LunarLander. Specifically, in the SoftFold's forward function, sample noise from a normal distribution with zero mean and a standard deviation of noise_level, and add it to the crease parameter before calculating 'p'. The noise_level will be calculated based on the current training iteration using a linear annealing schedule between noise_level_start and noise_level_end. The noisy crease parameter will be clipped to a reasonable range (e.g., 0.1 to 5.0) to prevent extreme values.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A military base commander advocating for better welfare facilities for soldiers",
+        "Idea number": 7
+    },
+    {
+        "Name": "state_dependent_hyperplane_shift",
+        "Title": "State-Dependent Hyperplane Shift in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to include a state-dependent shift of the hyperplane. Create a small neural network (e.g., a single linear layer followed by ReLU activation) that takes the input tensor as input and outputs a scalar bias value. Add this bias value to the dot product of the input tensor and the normal vector 'n' inside the forward function (i.e., `x_dot_n = input_tensor @ self.n + bias`). The forward pass will then use this shifted dot product to compute the folding effect. Experiment with different architectures for the bias prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed hyperplane (no shift). The crease and stretch parameters will remain fixed or independently learned.",
+        "Interestingness": 9,
+        "Feasibility": 9,
+        "Novelty": 8,
+        "Persona": "A fervent Juventus supporter who constantly compares Ronaldo's performances to Messi's",
+        "Idea number": 8
+    },
+    {
+        "Name": "distance_dependent_stretch_modulation",
+        "Title": "Distance-Dependent Stretch Modulation in Soft Fold Layers: Enhancing Adaptability in PPO with Dynamic Folding Range",
+        "Experiment": "Modify the SoftFold layer to include a stretch parameter that is modulated based on the *absolute value* of the distance of the input data from the hyperplane. We will use the already computed `scale_factor` (which represents the normalized distance of the input from the hyperplane). Apply a function to the *absolute value* of the `scale_factor` to map it to a stretch modulation factor. Use a scaled tanh function: `stretch_modulation = torch.tanh(abs(scale_factor) * stretch_sensitivity)`. The `stretch_sensitivity` parameter controls how sensitive the stretch factor is to the distance from the hyperplane. The final stretch value used in the forward pass would then be calculated as `final_stretch = base_stretch + stretch_modulation`, where `base_stretch` is either a fixed value or a learnable parameter (as in the original SoftFold layer). Experiment with different values for `stretch_sensitivity` (e.g., 0.1, 1.0, 10.0) and potentially add a scaling factor to `stretch_modulation` to control the magnitude of the adjustment. Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed or independently learned 'stretch'. Add `stretch_sensitivity` to the Args dataclass. Log the stretch_sensitivity during training.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Persona": "An instructional designer who admires their expertise in educational psychology",
+        "Idea number": 9
+    },
+    {
+        "Name": "diversity_promoting_softfold",
+        "Title": "Diversity-Promoting Soft Fold Layers: Encouraging Representation Diversity for Enhanced Generalization in PPO",
+        "Experiment": "Modify the Agent class to keep track of all SoftFold layers. Add a new loss term to the overall loss function in the training loop that calculates the cosine similarity between the normal vectors 'n' of all pairs of SoftFold layers and penalizes high similarity. Introduce a hyperparameter 'diversity_coef' to control the strength of the diversity loss. Log the cosine similarity between the normal vectors during training to monitor the effect of the diversity loss. Specifically, in the Agent's `__init__` function, store all SoftFold layers in a list called `self.softfold_layers`. In the training loop, after calculating the standard PPO loss, calculate the diversity loss as follows: diversity_loss = 0.  Create a list of all pairs of SoftFold layers called `softfold_layer_pairs`. For each pair of SoftFold layers (sf1, sf2) in `softfold_layer_pairs`, calculate the cosine similarity between their normal vectors: `cos_sim = torch.nn.functional.cosine_similarity(sf1.n, sf2.n, dim=0)`. Add this to the diversity loss: `diversity_loss += cos_sim`.  After iterating through all pairs, normalize the diversity loss by the number of pairs: `diversity_loss /= len(softfold_layer_pairs)`. Finally, multiply the diversity loss by the `diversity_coef` and add it to the total loss. Add `diversity_coef` to the Args dataclass with a default value of 0.01. Log the average cosine similarity between the normal vectors during training.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A communication consultant with a contrasting approach to analyzing PR campaigns",
+        "Idea number": 10
+    }
+]

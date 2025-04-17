@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "alternative_folding_functions",
+        "Title": "Exploring Alternative Folding Functions in Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to allow for different activation functions besides the sigmoid. Introduce a hyperparameter 'fold_function' that can take values like 'sigmoid', 'tanh', 'relu', 'gaussian', or 'hard_tanh'. Implement these different activation functions within the forward pass of the SoftFold layer. For the Gaussian, use `torch.exp(-p**2 / (2 * sigma**2))` where sigma is a learnable or fixed parameter. Run experiments with each of these folding functions and compare their training dynamics, convergence speed, and final performance. Record the performance metrics for each activation function and compare them to the baseline sigmoid function. Note that the Gaussian function may require a different initialization strategy for the crease parameter.",
+        "Interestingness": 7,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Idea number": 3
+    },
+    {
+        "Name": "dynamic_crease_modulation",
+        "Title": "Dynamic Crease Modulation of Soft Fold Layers Based on Input State in PPO",
+        "Experiment": "Modify the Agent class to include a gating network that dynamically adjusts the crease parameter of the SoftFold layers based on the input state. Implement a small neural network (e.g., a single linear layer followed by a sigmoid activation) that takes the input tensor as input and outputs a weight vector of shape (num_soft_folds,). The output of this network will be used to modulate the crease parameter of each SoftFold layer within the actor and critic networks. Specifically, in the forward pass of the actor and critic, before the SoftFold layer is applied, multiply the original crease parameter (self.crease) of each SoftFold layer by the corresponding weight from the gating network. Then, proceed with the SoftFold operation using the modulated crease value. Experiment with different architectures for the gating network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model without dynamic crease modulation. num_soft_folds is a hyperparameter.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 4
+    },
+    {
+        "Name": "component_weighted_basis_fold",
+        "Title": "Component-Weighted Basis Fold: Fine-Grained Control of Folding Operations in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and perform a folding operation with respect to each one. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. For each basis vector N[i], compute the folding operation as before, resulting in num_basis folded tensors. Implement a small neural network that takes the input tensor as input and outputs a logit matrix of shape (num_basis, width). Apply a sigmoid function to the logit matrix to obtain a weight matrix of the same shape. For each folded tensor folded_tensor[i], multiply it element-wise by the corresponding weight vector from the weight matrix: weighted_tensor[i] = folded_tensor[i] * weights[i]. The final output is then computed as output = sum(weighted_tensor[i]) for i in range(num_basis). Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "Idea number": 5
+    },
+    {
+        "Name": "dotproduct_attention_softfold",
+        "Title": "Dot-Product Attention in Soft Fold Layers: Enhancing Feature Relevance for Folding",
+        "Experiment": "Modify the SoftFold layer to use the dot product of the input with the normal vector 'n' to generate attention weights. Apply a sigmoid function to the dot product to obtain attention weights. Multiply the input tensor element-wise with these attention weights before passing it to the folding operation. Compare the training dynamics, convergence speed, and final performance with the baseline model without the attention mechanism.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 6
+    },
+    {
+        "Name": "projected_attractor_fold",
+        "Title": "Projected Attractor Points for Soft Fold Layers: Directional Guidance of Representations in PPO",
+        "Experiment": "Modify the SoftFold layer to fold the input towards a learned attractor point in the input space, using a projection-based scaling. Replace the normal vector 'n' with a learnable attractor point 'a' of the same dimension as the input (width). Add a bottleneck layer to the attractor point. In the forward pass, calculate the vector connecting the input tensor 'x' to the attractor point 'a': `direction = a - x`. Calculate the projection of 'x' onto 'direction': `projection = torch.sum(x * direction, dim=1, keepdim=True) / (torch.norm(direction, dim=1, keepdim=True)**2 + 1e-8)`. Use a sigmoid function to scale the movement towards the attractor point based on this projection. Specifically, calculate `p = self.crease * projection`. Apply a sigmoid function to `p`: `sigmoid = torch.sigmoid(p)`. The output tensor is then computed as `output = x + self.stretch * sigmoid * direction`. This moves the input 'x' towards the attractor point 'a', with the amount of movement scaled by the sigmoid function of the projection. Experiment with different initializations for the attractor point 'a' (e.g., random initialization, initialization to the mean of the input data). Compare the training dynamics, convergence speed, and final performance with the baseline model using a hyperplane fold.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 7
+    },
+    {
+        "Name": "hypernetwork_crease_modulation",
+        "Title": "Hypernetwork-Modulated Crease Parameter in Stacked Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the Agent class to incorporate a hypernetwork that modulates the 'crease' parameter of a stack of SoftFold layers. Replace the two SoftFold layers in both the actor and critic networks with a stack of N SoftFold layers (e.g., N=2 or 3). Implement a hypernetwork that takes the output of the previous layer as input and outputs a scaling factor for the 'crease' parameter of each SoftFold layer in the stack. The hypernetwork can be a small neural network (e.g., a few linear layers with Tanh activations). The output of the hypernetwork should be reshaped to match the number of SoftFold layers. In the forward pass of the actor and critic, sequentially apply each SoftFold layer in the stack. Before applying each SoftFold layer, pass the output of the previous layer through the hypernetwork to generate a scaling factor for the 'crease' parameter. Multiply the original 'crease' parameter (self.crease) of the current SoftFold layer by the corresponding scaling factor from the hypernetwork. Then, proceed with the SoftFold operation using the modulated 'crease' value. Experiment with different architectures for the hypernetwork (e.g., adding more layers, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed SoftFold layers. Track the norms and variances of the hypernetwork's outputs to ensure stable training. The normal vector n will still be learned directly, and the stretch parameter will be fixed at 2.0. N is a hyperparameter.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 8
+    },
+    {
+        "Name": "performance_modulated_fold",
+        "Title": "Performance-Modulated Soft Fold Layers: Adapting Folding Behavior Based on Agent Reward in PPO",
+        "Experiment": "Modify the main training loop to include a global moving average of the episodic returns. Initialize a global moving average variable (e.g., `global_reward_ema = 0.0`) outside the Agent class. After each episode in any of the environments, update the global moving average using a smoothing factor (e.g., `alpha = 0.1`; `global_reward_ema = alpha * episodic_return + (1 - alpha) * global_reward_ema`). Pass this `global_reward_ema` to the Agent class as an argument in the `get_action_and_value` method. In the forward pass of the actor and critic, before the SoftFold layer is applied, multiply the original crease parameter (self.crease) of each SoftFold layer by a scaling factor derived from the global reward moving average. For instance, the scaling factor could be `scale = torch.clip(1.0 + (global_reward_ema - baseline_reward) / reward_std, min=0.5, max=1.5)`, where `baseline_reward` is a hyperparameter representing the expected reward and `reward_std` is a hyperparameter representing the standard deviation of the reward. The modulated crease value is then `modulated_crease = self.crease * scale`. Proceed with the SoftFold operation using the modulated crease value. Experiment with different values for the smoothing factor (alpha), baseline reward, and reward standard deviation. Compare the training dynamics, convergence speed, and final performance with the baseline model without performance modulation. Track the global moving average of the rewards and the scaling factor applied to the crease parameter to ensure stable training.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 9
+    },
+    {
+        "Name": "ensemble_softfold_fixedweights",
+        "Title": "Ensemble Soft Fold Layers with Fixed Weights: Improving Representation Learning via Diverse Folding in PPO",
+        "Experiment": "Modify the Agent class to replace each SoftFold layer with an ensemble of N SoftFold layers (e.g., N=2, 3, or 4). Each SoftFold layer in the ensemble will have its own independently learned normal vector 'n'. All crease parameters will be identical and shared across the ensemble. All stretch parameters will be identical and shared across the ensemble. In the forward pass of the actor and critic networks, apply each SoftFold layer in the ensemble to the input tensor. Aggregate the outputs of the ensemble using a fixed, equal weighting (i.e., average the outputs). Experiment with different values for N. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Track the diversity of the normal vectors in the ensemble (e.g., by measuring the cosine similarity between them) to ensure that the ensemble is exploring different folding directions.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Idea number": 10
+    }
+]

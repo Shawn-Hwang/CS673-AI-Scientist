@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "shared_mixture_of_hyperplanes",
+        "Title": "Shared Mixture of Hyperplanes in Soft Fold Layers: Enhancing Adaptability and Efficiency in PPO",
+        "Experiment": "Modify the SoftFold layer to use a weighted combination of multiple hyperplanes with shared weights. Introduce a new hyperparameter, `num_hyperplanes`. Replace the single normal vector `n` with a matrix `N` of shape `(num_hyperplanes, width)`. Introduce a shared weight prediction network that takes the input observation as input and outputs logits for all `num_hyperplanes` across all `SoftFold` layers. In each `SoftFold` layer, compute the weighted sum of the normal vectors using the weights obtained from the shared network (softmax applied to logits): `n = sum(weights[i] * N[i])`. Normalize the resulting vector `n`. Experiment with different architectures for the shared weight prediction network and different values for `num_hyperplanes`. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "Persona": "A trader who is interested in learning about the Quasimodo pattern, which is a relatively new trading strategy that can be used to increase the probability of a trade set up. The trader is looking for a way to increase their confidence in their trading and to trade with more confidence. The trader is likely to be interested in learning about the Quasimodo pattern and how it can be used in conjunction with other trading strategies to increase the probability of a trade set up. The trader is likely to be interested in learning about the Quasimodo pattern and how it can be used in conjunction with other trading strategies to increase the probability of a trade set up.",
+        "Idea number": 3
+    },
+    {
+        "Name": "input_modulated_crease",
+        "Title": "Input-Modulated Crease Parameter in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to modulate the crease parameter based on the input. Introduce a learnable vector 'c' of the same dimension as the input tensor (or a reduced dimension after projection). The crease value for each element in the batch is then computed as the dot product between the input tensor and the learnable vector 'c', passed through an activation function (e.g., sigmoid or ReLU) and scaled by a learnable scalar 'crease_scale'. The forward pass will then use this dynamically predicted crease value to compute the folding effect. Experiment with different activation functions and the presence/absence of the projection layer. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or global learnable crease.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "An individual interested in space exploration and technology development, who is also interested in small satellite payloads and space missions. They are familiar with NASA's programs and initiatives, and are looking for opportunities to contribute to scientific research and education. They are likely to be a researcher, engineer, or scientist who is interested in space technology and space exploration.",
+        "Idea number": 4
+    },
+    {
+        "Name": "mlp_modulated_hyperplane_combination",
+        "Title": "MLP-Modulated Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights generated by an MLP. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Normalize each row of 'N' to have unit length. Add a small MLP with two linear layers and a ReLU activation in between, that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different sizes for the hidden layer in the MLP. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A person who is interested in the history and development of the city of Mandaue, its cultural heritage, and its role in the country's industrialization. They are also interested in the city's current status as a highly-urbanized city and its efforts towards sustainability and multi-sectoral involvement. They are aware of the city's strategic location as a part of Metropolitan Cebu and its role in the province of Cebu and the region of Region 7.",
+        "Idea number": 5
+    },
+    {
+        "Name": "input_modulated_stretch",
+        "Title": "Input-Modulated Stretch Parameter in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to modulate the stretch parameter based on the input. Introduce a small neural network (e.g., a linear layer or a small MLP) that takes the input tensor as input and outputs a scalar value. Pass the output of this network through a sigmoid activation function and then multiply it by a learnable scaling factor to obtain the stretch parameter. This ensures that the stretch parameter remains within a reasonable range (0 to scaling factor). Experiment with different architectures for the stretch prediction network (e.g., linear layer, MLP with one hidden layer) and different values for the scaling factor. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed stretch value.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A user who is familiar with the concept of expression properties in the context of Betty Blocks, and has experience in creating and managing these properties within the app. This user is likely to have a technical background and a strong understanding of programming languages and database management. They are likely to have a hands-on approach to problem-solving and are comfortable working with complex data structures and algorithms. They are also likely to be interested in learning more about the different types of expression properties available in Betty Blocks and how they can be used to create more sophisticated and dynamic expressions.",
+        "Idea number": 6
+    },
+    {
+        "Name": "input_modulated_dimensionwise_folding",
+        "Title": "Input-Modulated Dimension-Wise Folding in Soft Fold Layers: Enhancing Adaptive Feature Selectivity in PPO",
+        "Experiment": "Modify the SoftFold layer to use input-modulated scaling factors for dimension-wise folding. Replace the fixed scaling vector 's' with a small neural network (e.g., a linear layer or a small MLP) that takes the input tensor as input and outputs a scaling vector 's' of the same dimension as the input tensor. The output of this network can be passed through an activation function (e.g., sigmoid) to constrain the values of the scaling vector. In the forward pass, before adding the residual vector, multiply it element-wise by the scaling vector 's' obtained from the network. Experiment with different architectures for the scaling vector prediction network (e.g., linear layer, MLP with one hidden layer) and different activation functions. Compare the training dynamics, convergence speed, and final performance with the baseline model using uniform folding and the dimension-wise folding with a fixed scaling vector.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A Pakistani national who is deeply concerned about the education system in their country and advocates for the improvement of primary education. This person is passionate about improving literacy rates and the quality of education in Pakistan. They are aware of the critical role that primary education plays in the development of a nation and the need for more resources and support to be allocated to this sector. This person is likely to be involved in various organizations and initiatives aimed at promoting basic education and ensuring that every child has access to quality education, regardless of their economic background.",
+        "Idea number": 7
+    },
+    {
+        "Name": "softfold_parameter_regularization",
+        "Title": "Parameter Regularization for Soft Fold Layers: Enhancing Generalization and Stability in PPO",
+        "Experiment": "Implement L2 regularization for the normal vector 'n', the crease parameter, and the stretch parameter within each SoftFold layer. Experiment with different regularization strengths for each parameter. Additionally, clip the stretch parameter to a maximum value (e.g., 5.0) to prevent it from becoming excessively large. Compare the training dynamics, convergence speed, and final performance with the baseline model without regularization. Monitor the norms of the normal vectors and the values of the crease and stretch parameters during training to assess the effectiveness of the regularization techniques.",
+        "Interestingness": 7,
+        "Feasibility": 7,
+        "Novelty": 5,
+        "Persona": "A passionate and skilled photographer who specializes in capturing the beauty and complexity of nature. They have a keen eye for composition and detail, and their notes are informative and insightful, offering valuable insights and perspectives on the art of photography. They are dedicated to sharing their knowledge and experiences with others and enjoy the process of creating beautiful and meaningful photographs.",
+        "Idea number": 8
+    },
+    {
+        "Name": "context_modulated_hyperplane_combination",
+        "Title": "Context-Modulated Hyperplane Combination in Soft Fold Layers: Enhancing Temporal Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on a context vector generated by an RNN integrated within the layer. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a GRU or LSTM within the SoftFold layer. The RNN takes the input tensor as input and updates its hidden state. The hidden state of the RNN serves as the context vector. Add a small neural network (e.g., a linear layer followed by a softmax activation) that takes the context vector as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range of num_basis. Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Initialize the hidden state of the RNN to zero at the beginning of each episode. Experiment with different values for num_basis (e.g., 2, 4, 8), different types of RNNs (GRU, LSTM), and different sizes for the hidden state. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A scientist who specializes in the development and production of vaccines, particularly mRNA technology. She is skilled in understanding the chemical reactions involved in manufacturing mRNA vaccines and is knowledgeable about the different steps and requirements for producing vaccines. She is also familiar with the importance of biosecurity and strict regulations in the production of COVID-19 vaccines. Additionally, she is aware of the challenges and difficulties that manufacturers face in obtaining raw materials and ensuring the safety and efficacy of vaccines.",
+        "Idea number": 9
+    },
+    {
+        "Name": "softfold_normal_vector_scaled_initialization",
+        "Title": "Impact of Scaled Normal Vector Initialization on Soft Fold Layer Performance in PPO",
+        "Experiment": "Modify the SoftFold layer to allow for different scaled initialization strategies for the normal vector 'n'. Implement the following initialization methods:\n\n1.  **Random Orthogonal Initialization (current):** Initialize 'n' with a random orthogonal matrix (as it is currently done), then normalize.\n2.  **Scaled Random Initialization:** Generate a random vector 'n' with values sampled from a uniform distribution between -1 and 1. Scale this vector by a factor of `scale`, where `scale` is proportional to the range of the environment's observation space. Specifically, `scale = np.linalg.norm(envs.single_observation_space.high - envs.single_observation_space.low) / np.sqrt(self.width)`. Then normalize the vector.\n3.  **Uniform Initialization with Observation Bounds:** Initialize 'n' with values sampled from a uniform distribution between `lower_bound` and `upper_bound`, where `lower_bound = -np.linalg.norm(envs.single_observation_space.high - envs.single_observation_space.low) / (2 * np.sqrt(self.width))` and `upper_bound = np.linalg.norm(envs.single_observation_space.high - envs.single_observation_space.low) / (2 * np.sqrt(self.width))`. Then normalize the vector.\n\nCompare the training dynamics (episodic return, loss curves), convergence speed, and final performance with the baseline model (random orthogonal initialization). Track the norm of 'n' during training for each initialization method. This will require modifying the `SoftFold` class to accept an initialization strategy and implementing the corresponding initialization logic. The main experiment loop will then need to be modified to iterate over these different strategies.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Persona": "A legal and political expert who is deeply concerned about the use of eminent domain and its implications for the preservation of natural resources, the environment, and the rights of private property owners. This individual is knowledgeable about the history and dynamics of the Roman Republic, and is well-versed in the principles of land law, property rights, and constitutional law. They are also familiar with the current state of land use policies in the United States and the potential for abuse of power through the use of eminent domain. This persona is likely to be involved in discussions about land use planning, zoning, and land acquisition, and is dedicated to ensuring that the rights and interests of all stakeholders are respected and protected.",
+        "Idea number": 10
+    }
+]

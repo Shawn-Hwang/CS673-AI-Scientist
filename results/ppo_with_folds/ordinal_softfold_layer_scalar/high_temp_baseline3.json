@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "linear_input_dependent_crease",
+        "Title": "Linearly Modulated Input-Dependent Crease Parameter in Soft Fold Layers for PPO",
+        "Experiment": "Modify the SoftFold layer to implement a linearly modulated input-dependent crease parameter. Augment the existing 'crease' parameter (either fixed or learnable) by adding a term that is the dot product of the input tensor and a learnable weight vector 'w' of the same dimension as the input: `crease_value = original_crease + (input @ w)`. Use this `crease_value` in the sigmoid computation of the SoftFold layer's forward pass. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned 'crease'. Experiment with different initializations and regularization schemes for the weight vector 'w'. Additionally, analyze the learned weight vector 'w' to understand how different input features influence the crease parameter.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Idea number": 3
+    },
+    {
+        "Name": "sigmoid_modulated_dimension_wise_input_dependent_stretch",
+        "Title": "Sigmoid-Modulated Dimension-Wise Input-Dependent Stretch Parameter in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to implement a dimension-wise, input-dependent stretch parameter modulated by a sigmoid function. Replace the scalar 'stretch' parameter with a learnable weight vector 's' of the same dimension as the width, and a linear layer that maps the input to this dimension. Specifically:\n 1. Introduce a new nn.Parameter 's' of shape (width,). Initialize it with values around 1.\n 2. Introduce a new nn.Linear layer 'linear_s' which has input of dimension width and outputs a tensor of dimension width (s.shape). Set the linear layers bias to false: nn.Linear(..., bias=False).\n 3. In the forward pass, calculate the modulated stretch weights. First calculate pre_sigmoid = input_tensor @ linear_s.weight (input tensor multiplied with linear layer for s).\n 4. modulated_stretch = torch.sigmoid(pre_sigmoid) * s. Make sure s is element-wise multiplied into it, since linear layer affects element-wise values. \n 5. Then update the return tensor by return input_tensor + modulated_stretch * residual_vec.\nCompare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned 'stretch'. Experiment with different initialization strategies and regularization techniques for the weight vector 's' and the weights/biases of linear_s. Tune learning rates.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 4
+    },
+    {
+        "Name": "mixture_of_soft_folds",
+        "Title": "Mixture of Soft Fold Layers: Input-Dependent Combination for Enhanced Representation in PPO",
+        "Experiment": "Create a `MultiSoftFold` layer that combines multiple SoftFold transformations through a weighted average. This layer receives the number of SoftFold layers as a parameter. Each SoftFold layer within `MultiSoftFold` will maintain its own normal vector, crease, and stretch (potentially learnable). Implement a small neural network (e.g., a linear layer followed by a softmax) that takes the input tensor as input and outputs a weight vector with the same length as the number of SoftFold layers, w of shape (num_folds,). The forward pass computes the weighted average of the outputs of individual SoftFold layers using the weights predicted by the network: output = sum(weights[i] * softfold_i(input)) for i in range(num_folds). Integrate the `MultiSoftFold` layer into the actor and critic networks in place of the original `SoftFold` layer. Experiment with different numbers of SoftFold layers (e.g., 2, 3, 4) within `MultiSoftFold` and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions before the softmax). Compare the training dynamics, convergence speed, and final performance with the baseline single `SoftFold` layer. Track the learned weights to understand how the network utilizes different SoftFold transformations based on the input.",
+        "Interestingness": 10,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Idea number": 5
+    },
+    {
+        "Name": "weighted_basis_normal_vector",
+        "Title": "Input-Dependent Weighted Basis Combination for Normal Vector in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to combine multiple basis normal vectors with input-dependent weights to create a dynamic normal vector `n`.\n1. Introduce a learnable matrix `N` of shape (num_basis, width), where num_basis is a hyperparameter and width is the input dimension. Initialize N as nn.Parameter(torch.randn(num_basis, width)).\n2. Create a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). Set the linear layers bias to false: nn.Linear(..., bias=False).\n3. In the forward pass, calculate the weighted combination of basis vectors: `n_modified = (torch.sigmoid(weights) * N).sum(dim=0)`.\n4. updated_n = n_modified\n5. Normalize the resulting `updated_n` vector to ensure it has unit length.\n6. Use the resulting `updated_n` instead of the original `n` in the SoftFold layer's forward pass.\nCompare the training dynamics, convergence speed, and final performance with the baseline model. Experiment with different values for num_basis (e.g., 2, 4, 8) and architectures for the weight prediction network. Also try adding a skip connection to linear layer to prevent drastic jumps in the n_modified (concatenating input_tensor with the output, before softmax).",
+        "Interestingness": 10,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Idea number": 6
+    },
+    {
+        "Name": "gated_additive_soft_folds",
+        "Title": "Gated Additive Combination of Soft Fold Layers: Input-Dependent Modulation for Enhanced Representation in PPO",
+        "Experiment": "Create a `GatedAdditiveSoftFold` layer that combines multiple SoftFold transformations through an input-dependent modulation mechanism.\n 1. Initialize multiple independent SoftFold layers (e.g., num_folds=4 or 8). Each SoftFold layer maintains its own normal vector, crease, and stretch parameters. Important, apply L2 regularization to each soft fold weight, for numerical stability.\n 2. Implement a gating network: a small neural network (e.g., a single linear layer followed by ReLU activation) that takes the input tensor and outputs a *modulation* vector of the same dimension as the input tensor. Ensure that this module is not extremely deep, use ReLU activation. linear layer -> ReLU activation.\n 3. In the forward pass:\n    * Compute the output of each SoftFold layer individually: `softfold_outputs[i] = softfold_i(input)`\n    * Pass the input tensor through the gating network to obtain the modulation vector: `modulation_vector = gating_network(input)`\n    * Element-wise multiply the SoftFold outputs element-wise by the modulation vector, `modulated_output[i] = softfold_outputs[i] * modulation_vector` \n    * Calculate sum of element wise-multiplied soft fold outputs: `output = torch.sum(modulated_output) for i in range(num_folds)`. \n    Regularize by minimizing activation across soft fold modules\n 4. Replace the existing `SoftFold` layers in the actor and critic networks with the new `GatedAdditiveSoftFold` layer. Experiment with different architectures for the gating network (number of neurons). Compare the training dynamics, convergence speed, and final performance with the baseline model. Visualize the gating network's outputs and the softfold module output, to show which softfold layers are strongly or weakly activating and the variance and standard deviation.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Idea number": 7
+    },
+    {
+        "Name": "modulated_outer_product_interaction",
+        "Title": "Modulated Outer Product Interaction in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to include a modulated outer product interaction. Specifically: 1. Create a function outer_product(input, n) that calculates the outer product between the input tensor (batch_size, width) and the normal vector n (width,). The output shape will be (batch_size, width, width). 2. Introduce a learnable weight matrix W of shape (width, width). Initialize W as a nn.Parameter(torch.randn(width, width)). 3. In the forward pass: a. Calculate the outer product between the input tensor and the normal vector: outer_product_tensor = outer_product(input_tensor, self.n). b. Compute interaction output by flattening the outer_product_tensor along with a scaled transformation, i.e. `interaction_output = (outer_product_tensor.view(input_tensor.size(0), -1) @ W).view(input_tensor.size(0), width)`. regularise using L2. c. Modify residual_vec = (1 - scale_factor).unsqueeze(1) * interaction_output. 4. return input_tensor + self.stretch * sigmoid.unsqueeze(1) * residual_vec; Replace existing soft fold modules by newly constructed modules with interaction. Compare the training dynamics, convergence speed, and final performance with the baseline model. regularize the W matrix and activation statistics with L2 regularisation during loss. Note how much more elegant the result becomes. By modulating parameters with scaled dot product attention, complexity scales quadratically, reducing computational space while extracting useful features from data. Try testing with other activation techniques to see any affects to performance of PPO, particularly in relation to value and loss functions.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Idea number": 8
+    },
+    {
+        "Name": "normal_vector_variance_regularization",
+        "Title": "Variance Regularization of the Normal Vector in Soft Fold Layers for Enhanced Stability in PPO",
+        "Experiment": "Modify the SoftFold layer to add a variance regularization term to the loss function that penalizes changes in the normal vector 'n' from its initial value. By biasing the model for small changes via the penalty we improve stability during optimisation.\n\n 1.  Store the initial value of the normal vector `n` during initialization of the SoftFold module (as a buffer called `n_initial`). Before creating nn.Parameter `n`, initialise with: `n = torch.randn(self.width) * (2 / self.width) ** 0.5`, and buffer the initialisation of n to n_initial after `n = nn.Parameter(n)`: `self.register_buffer('n_initial', n.data.clone())`\n 2.  Add to existing loss, after the calculation: `variance_loss = lambda * torch.sum((self.n - self.n_initial)**2)` where lambda is some appropriately-chosen regularisation parameter, after back propagation/gradient descent (`loss.backward()`). Scale parameter as a function of width of input to layer, for better tuning dynamics for various applications.\n 3. Compare the training dynamics, convergence speed, and final performance with the baseline model without variance regularization. Monitor the variance of the normal vector 'n' during training to verify its stabilization. Experiment with different values of lambda with range  [1e-6, 1e-5, 1e-4, 1e-3]. For analysis purposes plot deviation `torch.sum((self.n - self.n_initial)**2)`, the lower deviation throughout optimisation refers to a better variance regularised/stable model. In analysis, include regularisation (decay) of factor lambda as function of epoch; decay is one of common means of dealing with large gradient and optimisaiton problems that destabilise overall performance; potential improvements can arise to decaying to potentially remove regularisation through final optimisaiton iterations.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Idea number": 9
+    },
+    {
+        "Name": "scaled_adaptive_soft_fold_parameters",
+        "Title": "Scaled and Adaptively Modulated Parameter Soft Fold Layers: Increased Optimization of Biases for PPO Enhanced Feature Space Performance",
+        "Experiment": "To allow for scaled regularisations (decay-weighted scheduling) and biases to optimise parameters effectively from `ScaledSoftFold`:\n\n1. Within the `Agent` class, modify the `actor` and `critic` networks; remove original `SoftFold` Layers. Insert new Soft Fold layers, tuned parameters for stable/good results to prevent loss of original module intent, potentially making more efficient from reduced number/frequency. By improved gating methodology, model is refined towards performing stronger at lower `SoftFold` frequency modules in network model, given its modularity from `SoftFold.width`;\n    * In Scaled Module - `ScaledSoftFold(width:int)` - which outputs dimension scaling data with its incoming tensor, include an activation scaling weight that will apply decay across SGD steps through backpropagation, on initial `SoftFold` parameter biases during optimisation and the linear scaling parameters. Decay weight should exponentially increase as L2 loss over epochs scaled (by number/amount, decay rate); schedule factor added too, which decays initial factor and scales based on linear scaling weight activation through tensor element wise (parameter = weight x parameter x tensor, biases adapt). Schedule weight factor also applied into parameters' weights as decay with L2 at `nn.Linear(...` module, improves activation to focus onto key feature-domains with decaying learning rate scale.\n  * By learning on incoming parameter from network `in_features`, allows it focus via learning bias better at signal strength!\n   * Implemented by, *modifying Scaled Module to adapt scaled `residual`: `residual = GatingNetwork(previousModuleActivation) * in_features`, before softfold activation calculation as biases. Regularized scaling `output_scaled = L2output + scaledWeighting * Residual * Decay` , before adding on L2 scaling.",
+        "Interestingness": 10,
+        "Feasibility": 9,
+        "Novelty": 10,
+        "Idea number": 10
+    }
+]

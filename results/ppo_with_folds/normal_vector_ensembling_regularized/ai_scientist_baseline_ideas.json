@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "weighted_parallel_softfold_layers",
+        "Title": "Weighted Parallel SoftFold Layers: Enhancing Representation Power and Stability in PPO",
+        "Experiment": "Implement weighted parallel SoftFold layers within the actor and critic networks. Replace each existing SoftFold layer with a set of 'num_parallel' SoftFold layers. Each of these parallel layers will have its own independently learned normal vector 'n', crease, and stretch parameters. Introduce a learnable weight for each parallel soft fold layer, initialized to 1/num_parallel. The outputs of these parallel SoftFold layers will be multiplied by their respective weights and then averaged. Experiment with different values for 'num_parallel' (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 3
+    },
+    {
+        "Name": "normal_vector_regularization",
+        "Title": "Normal Vector Regularization in Soft Fold Layers: Enhancing Stability and Generalization in PPO",
+        "Experiment": "Modify the training loop to add a regularization term to the loss function that penalizes the norm of the normal vector 'n' and the crease parameter in the SoftFold layers. Implement L2 regularization, where the regularization term is lambda * (||n||^2 + crease^2), where lambda is a hyperparameter controlling the regularization strength. Experiment with different values for lambda (e.g., 0.0001, 0.001, 0.01) and compare the training dynamics, convergence speed, and final performance with the baseline model without regularization. Add logging to track the norm of the normal vectors and the crease parameter during training. Specifically, modify the training loop in `run_experiment` to include the regularization loss. Within the inner loop, after calculating the main loss, calculate the regularization loss as the sum of the squared norms of the 'n' parameters and the squared value of the crease parameter of all SoftFold layers, multiplied by the lambda. Add the regularization loss to the main loss before calling `loss.backward()`. Also, within the `Agent` class, add a method to compute the norm of the normal vector and the value of the crease parameter of each SoftFold layer and log it to the SummaryWriter.",
+        "Interestingness": 7,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Idea number": 4
+    },
+    {
+        "Name": "orthogonal_subspace_softfold",
+        "Title": "Orthogonal Subspace SoftFold Layers: Enhancing Representation Learning and Stability in PPO",
+        "Experiment": "Implement an orthogonal subspace SoftFold layer architecture. Replace each existing SoftFold layer in the actor and critic networks with a SubspaceSoftFold module. This module will consist of a linear projection layer (nn.Linear) that projects the input to a lower-dimensional subspace, followed by a SoftFold layer. The dimensionality of the subspace will be a hyperparameter 'subspace_dim'. The linear projection layer will be initialized with orthogonal initialization (torch.nn.init.orthogonal_). The forward pass will first project the input to the subspace using the linear layer, then apply the SoftFold layer to the projected input. Keep the number of SubspaceSoftFold modules in sequence fixed at 2, as in the original architecture. Experiment with different values for 'subspace_dim' (e.g., 16, 32, 64). Compare the training dynamics, convergence speed, and final performance with the baseline model using the original SoftFold layers. Add logging to track the norms of the projection matrices (using torch.linalg.norm) and their orthogonality (using matrix.T @ matrix - I).",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 5
+    },
+    {
+        "Name": "cascaded_softfold_layers_with_skip_connections",
+        "Title": "Cascaded SoftFold Layers with Skip Connections: Enhancing Decision Boundary Complexity and Training Stability in PPO",
+        "Experiment": "Implement a cascaded SoftFold layer architecture with skip connections. Replace each existing SoftFold layer in the actor and critic networks with a CascadedSoftFoldWithSkipConnections module. This module will consist of a sequence of 'num_layers' SoftFold layers applied sequentially, with skip connections from the input of the module to the output of each SoftFold layer. 'num_layers' will be a hyperparameter. The forward pass will apply each SoftFold layer in the cascade to the output of the previous layer. Before each SoftFold layer, the input to the module will be added to the current layer's input. Experiment with different values for 'num_layers' (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer and the cascaded SoftFold layer without skip connections. Add logging to track the norms of the normal vectors and the crease parameters of each SoftFold layer in the cascade. Specifically, create a new class called CascadedSoftFoldWithSkipConnections which takes num_layers as input. The forward pass will consist of a for loop, where the input is passed through each softfold layer. The input to the module will be added to the input of each soft fold layer. The Agent class will be modified to use CascadedSoftFoldWithSkipConnections instead of SoftFold. Logging within the training loop will be modified to account for the multiple layers.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 6
+    },
+    {
+        "Name": "gated_softfold_layers",
+        "Title": "Gated SoftFold Layers: Enhancing Policy Learning with Input-Adaptive Hyperplane Selection in PPO",
+        "Experiment": "Implement a GatedSoftFold layer that contains multiple SoftFold sub-layers and a gating network. The gating network will be a single linear layer followed by a softmax activation. During the forward pass, a SoftFold sub-layer will be selected deterministically based on the argmax of the gating network's output. The output of the selected SoftFold sub-layer will be the output of the GatedSoftFold layer. Modify the Agent class to use the GatedSoftFold layer instead of the SoftFold layer. Experiment with different numbers of SoftFold sub-layers (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Add logging to track the frequency of selection of each SoftFold sub-layer during training.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 7
+    },
+    {
+        "Name": "attention_softfold_ensemble",
+        "Title": "Attention-Based SoftFold Ensemble: Enhancing Representation Learning with Adaptive Hyperplane Combination in PPO",
+        "Experiment": "Implement an AttentionSoftFoldEnsemble layer that consists of multiple SoftFold sub-layers and an attention mechanism. Each SoftFold sub-layer will have its own independently learned normal vector 'n', crease, and stretch parameters. The attention mechanism will be a small multi-layer perceptron (MLP) that takes the input to the AttentionSoftFoldEnsemble layer as input and outputs a weight vector, with each weight corresponding to a SoftFold sub-layer. The MLP will consist of two linear layers with a Tanh activation in between, followed by a softmax activation. The output of the AttentionSoftFoldEnsemble layer will be the weighted sum of the outputs of the SoftFold sub-layers, where the weights are determined by the attention mechanism. Modify the Agent class to use the AttentionSoftFoldEnsemble layer instead of the SoftFold layer. Experiment with different numbers of SoftFold sub-layers (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Add logging to track the attention weights during training.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 8
+    },
+    {
+        "Name": "learnable_subspace_softfold_sequence",
+        "Title": "Learnable Subspace SoftFold Sequence: Enhancing Representation Learning with Adaptive Feature Selection and Folding in PPO",
+        "Experiment": "Implement a LearnableSubspaceSoftFoldSequence module that consists of a sequence of SoftFold layers, each operating on a learnable subspace of the input features. The number of SoftFold layers and the dimensionality of the subspaces will be hyperparameters. Create a new class called LearnableSubspaceSoftFoldSequence which takes num_folds and subspace_dim as input. During initialization, create a list of num_folds SoftFold layers. Also during initialization, create a list of linear projection layers (nn.Linear), one for each SoftFold layer. Each linear projection layer should project the input feature dimension to subspace_dim. The forward pass will consist of a for loop, where the input is projected to a lower-dimensional subspace using the corresponding linear projection layer, and then passed through the corresponding SoftFold layer. The outputs of all SoftFold layers will then be concatenated. After concatenation, a final linear layer will project the concatenated representation back to the original input dimension. The Agent class will be modified to use LearnableSubspaceSoftFoldSequence instead of SoftFold. Experiment with different values for num_folds (e.g., 2, 3, 4) and subspace_dim (e.g., 16, 32, 64). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Add logging to track the norms of the normal vectors and the crease parameters of each SoftFold layer in the sequence, as well as the norms of the weights of the linear projection layers and the final linear layer.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 9
+    },
+    {
+        "Name": "modulated_recurrent_softfold",
+        "Title": "Modulated Recurrent SoftFold Layers: Enhancing Temporal Adaptability with Refined Hyperplane Folding in PPO",
+        "Experiment": "Implement a ModulatedRecurrentSoftFold layer that uses an RNN to predict a modulation of the existing learned normal vector 'n'. The RNN will take the input tensor as input and output a vector of the same dimension as 'n'. The hidden state of the RNN will be updated at each time step. Replace each existing SoftFold layer in the actor and critic networks with a ModulatedRecurrentSoftFold module. The ModulatedRecurrentSoftFold module will consist of an RNN (e.g., an LSTM or GRU) that takes the input tensor as input and outputs a modulation vector. Initialize the RNN's hidden state to zero at the beginning of each episode. The forward pass will first update the RNN's hidden state based on the current input tensor, then use the output of the RNN to modulate the existing normal vector 'n'. The modulated normal vector will be computed as n_modulated = n + RNN_output. The modulated normal vector will then be normalized to have unit length. The modulated normal vector n_modulated will then be used to compute the folding effect. Experiment with different types of RNNs (e.g., LSTM, GRU), different numbers of RNN layers (e.g., 1, 2), and different hidden state sizes (e.g., 32, 64). Also, experiment with scaling the RNN output before adding it to n (e.g., n_modulated = n + scale * RNN_output, where scale is a small learnable parameter or a fixed constant). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n' and the original RecurrentSoftFold layer. Add logging to track the norm of the normal vectors, the hidden state of the RNN, and the magnitude of the modulation vector during training.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 10
+    }
+]

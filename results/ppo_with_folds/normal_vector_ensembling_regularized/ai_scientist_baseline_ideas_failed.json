@@ -1,0 +1,74 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "diagonal_curved_soft_fold",
+        "Title": "Diagonal Curvature in Soft Fold Layers: A Parameter-Efficient Approach to Non-Linearity",
+        "Experiment": "Modify the SoftFold layer to include a learnable diagonal curvature term. Replace the matrix 'C' with a vector 'C' of shape (width,) as a parameter of the SoftFold module. Modify the forward pass to incorporate the curvature term: p = self.crease * (x_dot_n - n_dot_n + (x * C) @ x). Experiment with different initialization strategies for C (e.g., small random values, zero initialization). Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Idea number": 3
+    },
+    {
+        "Name": "multiple_hyperplanes_mlp_combination",
+        "Title": "Multiple Hyperplanes with MLP Combination in Soft Fold Layers: Enhancing Representation Power in PPO",
+        "Experiment": "Modify the SoftFold layer to use multiple hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. Also, create learnable crease and stretch parameters for each hyperplane, resulting in crease being a tensor of shape (num_hyperplanes,) and stretch also being a tensor of shape (num_hyperplanes,). Normalize N after each update. The forward pass will compute the soft fold operation for each hyperplane independently, resulting in a tensor of shape (batch_size, num_hyperplanes, width). Then, combine the outputs of all hyperplanes using a small MLP (e.g., two linear layers with a Tanh activation in between) with input size num_hyperplanes * width and output size width. Experiment with different values for num_hyperplanes (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 7,
+        "Idea number": 4
+    },
+    {
+        "Name": "multiple_hyperplanes_weighted_average",
+        "Title": "Multiple Hyperplanes with Input-Dependent Weighted Averaging in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to use multiple hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. Also, create learnable crease and stretch parameters for each hyperplane, resulting in crease being a tensor of shape (num_hyperplanes,) and stretch also being a tensor of shape (num_hyperplanes,). Normalize N after each update. The forward pass will compute the soft fold operation for each hyperplane independently, resulting in a tensor of shape (batch_size, num_hyperplanes, width). Then, add a linear layer that takes the input tensor (batch_size, width) as input and outputs a tensor of shape (batch_size, num_hyperplanes). Apply a softmax activation to this tensor to obtain weights for each hyperplane. Compute the weighted average of the hyperplane outputs using these weights, resulting in a tensor of shape (batch_size, width). Experiment with different values for num_hyperplanes (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 5
+    },
+    {
+        "Name": "input_dependent_crease_and_stretch",
+        "Title": "Input-Dependent Crease and Stretch Parameters in Soft Fold Layers: Enhancing Adaptive Non-Linearity",
+        "Experiment": "Modify the SoftFold layer to make the crease and stretch parameters input-dependent. Replace the scalar crease and stretch parameters with linear layers that take the input tensor as input and output the crease and stretch values. Implement a shared linear layer that takes the input tensor as input and outputs a tensor of size 2. Then, branch out with two separate linear layers (without activation function) to predict the crease and stretch values. The first of the branching linear layers will output a single value representing the crease, and the second will output a single value representing the stretch. Initialize the weights of the shared linear layer to zero. Initialize the biases of the shared linear layer to zero. Initialize the weights of the branching linear layers to zero. Initialize the bias of the branching linear layer for the crease to the original crease value (either a fixed value or the initial value if it's learnable). Initialize the bias of the branching linear layer for the stretch to the original stretch value (either a fixed value or the initial value if it's learnable). In the forward pass, pass the input tensor through the shared linear layer, then through the branching linear layers to obtain the input-dependent crease and stretch values. Use these values in the soft fold operation. Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed crease and stretch parameters.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 6
+    },
+    {
+        "Name": "input_dependent_softfold_skip",
+        "Title": "Input-Dependent Skip Connections in Soft Fold Layers: Adaptive Feature Combination for Enhanced Performance",
+        "Experiment": "Modify the SoftFoldSkip module to include a linear layer that takes the input tensor as input and outputs the skip weight. The skip weight will then be used to scale the output of the SoftFold layer before it's added to the original input, creating an input-dependent skip connection. Specifically, the Agent class will be modified as follows:\n\nclass Agent(nn.Module):\n    def __init__(self, envs):\n        super().__init__()\n        def create_mlp(output_dim):\n            return nn.Sequential(\n                layer_init(nn.Linear(np.array(envs.single_observation_space.shape).prod(), 64)),\n                nn.Tanh(),\n                SoftFoldSkip(64),\n                layer_init(nn.Linear(64, 64)),\n                nn.Tanh(),\n                SoftFoldSkip(64),\n                layer_init(nn.Linear(64, output_dim), std=1.0 if output_dim == 1 else 0.01),\n            )\n\n        self.critic = create_mlp(1)\n        self.actor = create_mlp(envs.single_action_space.n)\n\nclass SoftFoldSkip(nn.Module):\n    def __init__(self, width):\n        super().__init__()\n        self.softfold = SoftFold(width)\n        self.skip_weight_layer = layer_init(nn.Linear(width, 1)) # Input-dependent skip weight\n\n    def forward(self, x):\n        folded = self.softfold(x)\n        skip_weight = torch.sigmoid(self.skip_weight_layer(x)) # Sigmoid to keep weights between 0 and 1\n        return x + skip_weight * folded\n\nKey metrics: episodic return, training stability (variance of the episodic return), and the distribution of the learned skip weights across different inputs.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 7
+    },
+    {
+        "Name": "low_rank_input_dependent_rotation_soft_fold_l2_reg",
+        "Title": "Low-Rank Input-Dependent Rotation with Orthogonality Regularization in Soft Fold Layers",
+        "Experiment": "Modify the SoftFold layer to include a low-rank input-dependent rotation with L2 orthogonality regularization. Add a linear layer that takes the input tensor as input and outputs a matrix which represents a rotation matrix in a lower-dimensional space. Add an L2 regularization term to the loss function to encourage the rotation matrix to be orthogonal. The forward pass will then rotate the input tensor using the rotation matrix before applying the SoftFold operation. Specifically:\n\n1.  Add a linear layer `rotation_matrix_layer` to the `SoftFold` class that takes the input tensor of size `width` and outputs a matrix of size `rank x rank`, where `rank` is a hyperparameter (e.g., 4, 8). This matrix will represent the rotation matrix in the lower-dimensional space.\n2.  Add two linear layers `projection_in` (width -> rank) and `projection_out` (rank -> width). Project the input tensor to the low rank space using `projection_in`. Project the rotated vector back to the original space using `projection_out`.\n3.  In the forward pass, compute the rotation matrix using `rotation_matrix_layer`. Project the input to the low-rank space `x_low = projection_in(input_tensor)`. Rotate the projected input: `rotated_input_low = x_low @ rotation_matrix`. Project back to high dimensional space: `rotated_input = projection_out(rotated_input_low)`. Perform the soft fold operation on the rotated input: `output = self.softfold(rotated_input)`.\n4.  Compute the orthogonality regularization term: `orthogonality_loss = torch.mean((rotation_matrix @ rotation_matrix.T - torch.eye(rank).to(rotation_matrix.device))**2)`. Add this term to the overall loss, scaled by a hyperparameter `orthogonality_reg_coef`.\n\nCompare the training dynamics, convergence speed, and final performance with the baseline model using a fixed hyperplane. Experiment with different values of `rank` and `orthogonality_reg_coef`.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 8
+    }
+]

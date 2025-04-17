@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "softfold_placement_control_sweep",
+        "Title": "Sweeping the Placement and Properties of SoftFold Layers in PPO with Linear Layer Control",
+        "Experiment": "Modify the Agent class to dynamically construct the actor and critic networks based on the `softfold_location` parameter (pre, post, both) and the `layer_type` parameter (softfold, linear). Add a parameter to the SoftFold constructor to control whether the `crease` parameter is learnable or fixed. Implement a sweep over `softfold_location`, `crease_learnable`, `crease_init`, and `layer_type` using command-line arguments. Log the sweep configuration to the summary writer and WandB.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "VQ-VAE Expert: A machine learning researcher that focuses on vector quantized variational autoencoders (VQ-VAE) and the unique techniques required to make them work including the straight-through gradient estimator and a larger learning rate for the codebook. Interested in discrete latent spaces for image generation.",
+        "Idea number": 3
+    },
+    {
+        "Name": "softfold_crease_l1",
+        "Title": "Impact of Crease Scaling and L1 Regularization on SoftFold Layer Performance",
+        "Experiment": "1. Modify the SoftFold class to accept a standard deviation parameter for the initialization of the `crease` parameter (sampled from a normal distribution centered at 1.0). 2. Implement L1 regularization on the `n` parameter within the SoftFold's forward pass. The L1 loss is calculated as `l1_loss = l1_strength * torch.norm(self.n, p=1)`. This loss is then added to the total loss during the training step. 3. Add arguments to the Args dataclass to control the standard deviation of the crease initialization and the L1 regularization strength. 4. Modify the training loop to calculate and apply the L1 regularization loss. 5. Perform a grid search over different combinations of crease standard deviations (e.g., 0.1, 0.2, 0.4) and L1 regularization strengths (e.g., 0.0, 0.001, 0.01). 6. Log the average reward, gradient norm, parameter norm, L1 regularization loss, norm of the `n` vector, and the value of the `crease` parameter to TensorBoard. 7. Compare the performance of different configurations using the aggregated results (mean reward and confidence intervals).",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "Sparsity and Regularization Guru: Studies sparsity and regularization techniques for deep learning. Explores techniques such as L1 regularization, dropout, and weight decay to improve the generalization ability and interpretability of neural networks.",
+        "Idea number": 4
+    },
+    {
+        "Name": "threshold_softfold",
+        "Title": "Investigating the Impact of Sparsity in the SoftFold Layer via Soft Thresholding",
+        "Experiment": "1. Modify the SoftFold layer to include a soft thresholding operation on the normal vector `n` after each optimization step. 2. Add a hyperparameter to control the threshold value. 3. After each optimizer step, apply the soft thresholding to `n`. 4. Train the PPO agent with different threshold values. 5. Evaluate performance (episodic return), sparsity of `n` (percentage of zeroed-out elements), and training stability (gradient norms) across different threshold levels. 6. Add sparsity of n to final_info.json.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "Information Theory in Deep Learning Investigator: Applies information theory to deep learning. Focuses on tasks such as feature selection, dimensionality reduction, and adversarial robustness, using information-theoretic measures such as mutual information and entropy.",
+        "Idea number": 5
+    },
+    {
+        "Name": "orthogonal_sparse_softfold",
+        "Title": "Improving Generalization and Interpretability of SoftFold Layers with Orthogonality and Sparsity Regularization",
+        "Experiment": "1. Modify the Agent class to include orthogonality regularization for the normal vectors (n) in the SoftFold layers. This can be done by adding a loss term that penalizes the deviation of the norm of each normal vector from 1. The loss term can be added to the total loss during training. Specifically, the loss term will be lambda_orth * (||n|| - 1)^2, where lambda_orth is a hyperparameter. 2. Modify the Agent class to include L1 regularization for the crease and stretch parameters in the SoftFold layers. This can be done by adding a loss term that penalizes the absolute value of these parameters. The loss term can be added to the total loss during training. Specifically, the loss term will be lambda_sparse * (|crease| + |stretch|), where lambda_sparse is a hyperparameter. 3. Modify the Agent class to include lambda_orth and lambda_sparse as hyperparameters. 4. Add logging to track the sparsity of the SoftFold layers during training. This can be done by logging the mean absolute value of the crease and stretch parameters. 5. Compare the performance of the SoftFold layer with and without these regularization terms in LunarLander-v3. Run multiple seeds to get confidence intervals.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Persona": "Adversarial Autoencoder (AAE) Specialist: Deeply interested in using adversarial autoencoders to disentangle representations. Focuses on developing new regularization techniques within the adversarial training loop to encourage sparsity and orthogonality in the latent space, leading to more interpretable and controllable generative models.",
+        "Idea number": 6
+    },
+    {
+        "Name": "softfold_parameter_tuning",
+        "Title": "Investigating Initialization and Annealing Strategies for SoftFold Layer Parameters in Reinforcement Learning",
+        "Experiment": "Modify the SoftFold class to allow for different initialization strategies for the `crease` and `stretch` parameters (e.g., different means and standard deviations for the normal distribution). Implement annealing schedules for these parameters within the training loop (e.g., linearly decreasing from an initial value to a final value). Experiment with different initialization and annealing strategies. Record episodic return, gradient norm, explained variance, and training time for each strategy. Compare the performance of different strategies to the baseline (current setup) and identify the optimal initialization and annealing schedule for the SoftFold layer's parameters.",
+        "Interestingness": 9,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "Self-Supervised Representation Learning on Graphs Researcher: Studies self-supervised methods for learning graph embeddings, particularly contrastive learning techniques like GraphCL and DGI. Exploring how to effectively incorporate node features and graph structure to learn robust node representations for downstream tasks.",
+        "Idea number": 7
+    },
+    {
+        "Name": "softfold_stretch",
+        "Title": "Optimizing the Stretch Parameter in the SoftFold Layer for Enhanced PPO Performance",
+        "Experiment": "1. Modify the Args dataclass to include a 'fixed_stretch' parameter. If this parameter is set, the stretch parameter in the SoftFold layer will be fixed to the specified value. Conduct experiments where 'fixed_stretch' is set to various values (e.g., 0.5, 1.0, 1.5, 2.0, 2.5, 3.0) and compare the performance to the case where the stretch is learned (default behavior).\n2. Implement an adaptive stretch decay mechanism. Add 'stretch_decay_start' and 'stretch_decay_end' parameters to the Args dataclass. If these parameters are set, the stretch parameter will start at 'stretch_decay_start' and linearly decay to 'stretch_decay_end' over the course of training. If these parameters are not set, the stretch is either learned or fixed.\n3. When the stretch parameter is being learned, initialize it with a small amount of Gaussian noise (e.g., standard deviation of 0.1). Log the value of the stretch parameter to TensorBoard at each training iteration.\n4. Run the experiments on multiple environments (e.g., LunarLander-v3, CartPole-v1) to assess the environment dependence of the optimal stretch value. Report the optimal stretch value (fixed or learned) for each environment.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "Generalization Theory Pioneer: Works on generalization theory for deep learning. Develops new bounds on the generalization error of deep neural networks, taking into account factors such as network architecture, training data, and regularization techniques.",
+        "Idea number": 8
+    },
+    {
+        "Name": "input_dependent_softfold",
+        "Title": "Input-Dependent Hyperplane Soft Fold Layer for Enhanced Reinforcement Learning",
+        "Experiment": "Modify the SoftFold class to make the normal vector 'n' and the crease parameter input-dependent using a small neural network, specifically a linear layer. The linear layer will take the input tensor as its argument and output the hyperplane parameters. Compare performance on LunarLander-v3 with the original SoftFold layer, focusing on episodic returns, training stability, and convergence speed.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "Energy-Based Model (EBM) Advocate: A proponent of energy-based models, especially contrastive divergence learning. Focuses on improving the stability and convergence of training EBMs, possibly through modifications to the contrastive loss or by incorporating auxiliary variables.",
+        "Idea number": 9
+    },
+    {
+        "Name": "smoothed_direction_adaptive_softfold",
+        "Title": "Smoothed Directionally Adaptive SoftFold Layer with Sigmoid-Based Hyperplane Proximity Scaling",
+        "Experiment": "Modify the SoftFold layer to include a mechanism for scaling the crease parameter based on the proximity of the input data to the learned hyperplane, using a sigmoid function for smoothing. This involves: 1) Computing x_dot_n within the forward pass of the SoftFold layer. 2) Applying a sigmoid function to the absolute value of x_dot_n: sigmoid(abs(x_dot_n) * scale), where 'scale' is a hyperparameter controlling the steepness of the sigmoid. 3) Scaling the crease parameter by the output of the sigmoid function: crease * sigmoid_output. This ensures a smooth scaling of the crease based on proximity to the hyperplane. 4) Adding logging to track the adaptive crease values and the sigmoid scale hyperparameter during training. Compare the performance of the agent with the smoothed directionally adaptive SoftFold layer to the baseline implementation. Key metrics include final reward, variance of returns across episodes, the learned values of n, crease, and stretch, and the optimal sigmoid scale.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "Koopman Operator Theorist: Applies Koopman theory to neural network generalization analysis. Focuses on nonlinear noise filtering in high-dimensional spaces",
+        "Idea number": 10
+    }
+]

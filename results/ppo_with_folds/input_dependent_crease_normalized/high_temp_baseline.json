@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "input_dependent_crease_normalized",
+        "Title": "Input-Dependent Crease Parameter with Normalized Output in Soft Fold Layers for Enhanced Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to have a learnable, input-dependent crease parameter. Move one of the `SoftFold` modules to after the input layer. Replace the single scalar 'crease' parameter with a small neural network (e.g., a single linear layer) that takes the input tensor as input and outputs a scalar value, with ReLU non-linearity, followed by a sigmoid activation to normalize the range between 0 and 1. This normalized value is then used as the 'crease' parameter in the SoftFold forward pass. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or global learnable 'crease'. Record both final returns and compute KL divergence and other measures of training dynamics.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "Idea number": 3
+    },
+    {
+        "Name": "normal_vector_ensembling_regularized",
+        "Title": "Regularized Normal Vector Ensembling: Encouraging Coordination in Soft Fold Layers for Improved PPO Performance",
+        "Experiment": "Modify the `SoftFold` layers in the agent's actor and critic networks to share information through a regularized shared normal vector. Initialize a single learnable parameter `n0` of shape (width,) representing a base normal vector for all SoftFold layers. Then in each individual `SoftFold` layer, introduce layer specific 'delta' parameters `delta_n`, initialized randomly, with the same shape (width,) as 'n0' for each `SoftFold` module. Let n be a function of both: `n = n0 + scale * delta_n`, where `scale = alpha * ||n0|| / ||delta_n||`, so delta_n is scaling n0 in magnitude and alpha (initialized as a global parameter) regulates that scale. This is designed so the perturbation maintains reasonable similarity to the original vector. Further add a regularization loss term to encourage the alignment of the individual normal vectors with the shared normal vector `n0`. The regularization term will be `lambda * cosine_similarity(n0, n)`, where `cosine_similarity(n0, n) = (n0 @ n) / (||n0|| * ||n||)` and lambda is a hyperparameter controlling the strength of the regularization. Monitor the norms and alignment (dot product) of the normal vectors across the layers during training. Experiment with different values for alpha and lambda. Compare the training dynamics, convergence speed, and final performance with the baseline model and the unregularized ensembling approach.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "Idea number": 4
+    },
+    {
+        "Name": "softfold_ewc_regularization",
+        "Title": "Elastic Weight Consolidation for Soft Fold Layers: Mitigating Catastrophic Forgetting in PPO",
+        "Experiment": "Implement an Elastic Weight Consolidation (EWC) inspired regularization specifically for the 'n' (normal vector), 'crease', and 'stretch' parameters of the SoftFold layers. The implementation involves the following steps:\n\n1. **Initialization:** Initialize 'weight_i_old' with the initial values of the corresponding 'n', 'crease', and 'stretch' parameters in the SoftFold layers. \n2. **Weight Importance Calculation:** From the start of training, estimate the importance of each of the above specified weight (n, crease, stretch), parameters in the SoftFold layers by computing the diagonal of the Fisher Information Matrix (FIM). To approximate the FIM diagonal, for each parameter, compute the squared gradient of the PPO surrogate loss with respect to that parameter, averaged over a mini-batch of samples within the standard PPO update step. Because parameters n, crease, stretch can be quite different in scale, standardize all the parameter updates with the same coefficient from original optimizer used during regular PPO training. Calculate only once for early stage exploration at the beginning (`t=0`), can be potentially recalculated mid-way through (`if t == total_timesteps // 2`). \n3. **Regularized Training:** Train the agent with a modified loss function incorporating an EWC-style regularization term from the beginning of training (no pre-training phase). The regularized loss will be: `loss = original_loss + lambda * sum(importance_i * (weight_i - weight_i_old)^2)`, where `original_loss` is the standard PPO loss, `lambda = lambda_coeff/(t+1)` where `lambda_coeff` is a hyperparameter initialized globally controlling the strength of the regularization scaled by epoch `t` , `importance_i` is the estimated importance of weight `i`, `weight_i` is the current value of weight `i`, and `weight_i_old` is the value of weight `i` from initialization (or mid-point if FIM recomputed).\n4. **Parameter Specific Optimizers** Different fold layers such as the actor, the critic can have their own optimizers since different modules serve very different purposes and exhibit very different parameter gradient dynamics during training\n\nImplement code to modify the `Agent` class to store initial values of parameters to `weight_i_old` create variables that will host all `importance_i` (calculated at step 2.) immediately upon agent creation, calculate the regularization loss, and modify PPO training loops to include the regularization term. Add hyperparameter `lambda_coeff`.  Evaluate performance using return and compare training dynamics using KL divergence with/without regularization, and analyze how weight importance affects individual SoftFold parameters such as 'n', 'crease', and 'stretch'. ",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 5
+    },
+    {
+        "Name": "softfold_initial_placement",
+        "Title": "Impact of Initial Soft Fold Layer Placement in PPO: A Comparative Study",
+        "Experiment": "Modify the Agent class to allow for placement of a SoftFold layer at the beginning of both the actor and critic networks, immediately after the initial linear layer. Define a hyperparameter `initial_fold` (boolean) that determines whether the SoftFold layer is placed at the beginning. Also introduce `relu_linear` and `elu_linear` that places those modules in place. The hyperparameter dictates this new layer's presense at `initial_fold==True` (adds additional SoftFold to the begin). Otherwise, preserve existing architecture using default existing 'end' of all modules such that if `initial_fold==False`. The other addition of activation module options via booleans allows more complex non-linear layers, without need for other order or alternative modules since these will act as alternative linear non-linear transformations between each others (TanH-ReLU/ELU, and so forth). With ReLU and ELU in intermediate nonlinear placement controlled as flags for those activation function modules after embedding, and location of the SoftFold Placement as Hyperparameters at begin (`initial_fold=True`), or End (all defaults), experiment involves using RandomSearch sweeping for optimal model and agent parameters within parameter ranges.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Idea number": 6
+    },
+    {
+        "Name": "input_alignment_dependent_stretch",
+        "Title": "Input Alignment-Dependent Stretch Factor in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to make the stretch factor dependent on the input tensor and its alignment with the normal vector 'n'. The current stretch parameter (either fixed or learnable) will be replaced with an input-dependent stretch factor computed as follows:\n\n1.  **Alignment Calculation:** Calculate the cosine similarity between the input tensor and the normal vector 'n': `alignment = (input_tensor @ n) / (input_tensor.norm(dim=1) * n.norm())`.  Add a small epsilon (1e-8) to the norms to prevent division by zero. This gives a measure of how aligned the input is with the normal vector.  Clip alignment within a range `[-clip_val, clip_val]`: `alignment = torch.clamp(alignment, min=-clip_val, max=clip_val)`.\n2.  **Stretch Modulation:** Compute the stretch factor as a function of the (clipped) alignment:\n    `stretch = stretch_base * (1 + influence_factor * alignment)`, where `stretch_base` is a learnable parameter and `influence_factor` is a hyperparameter that determines how much the alignment affects the stretch factor.   Add a regularization term to the loss to penalize large values of `influence_factor`: `loss += lambda_influence * influence_factor.abs()`, where `lambda_influence` is a hyperparameter controlling the strength of the regularization.\n3.  **SoftFold Forward Pass:** Use the computed stretch factor in the SoftFold forward pass as before.\nImplement code to modify the `SoftFold` class to calculate the alignment, clip the alignment, compute the stretch factor, and use it in the forward pass. Add hyperparameters clip_val and lambda_influence. Log `alignment`, `stretch_base` and influence_factor during training. Monitor training dynamics, KL divergence etc",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 7
+    },
+    {
+        "Name": "input_dependent_crease_layernorm",
+        "Title": "Input-Dependent Crease Parameter with LayerNorm in Soft Fold Layers for Enhanced Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to have a learnable, input-dependent crease parameter. Prepend a LayerNorm module prior to entering SoftFold, with module parameter selected using parameter search for comparison against those after SoftFold layer placement. Replace the single scalar 'crease' parameter with a small neural network (e.g., a single linear layer) that takes the *normalized* input tensor from LayerNorm as input and outputs a scalar value, with ReLU non-linearity, followed by a sigmoid activation to normalize the range between 0 and 1. This normalized value is then used as the 'crease' parameter in the SoftFold forward pass. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or global learnable 'crease'. Also evaluate normalization location selection prior, and after in agent network. Log normalized tensor range before using `crease`, which effects, KL divergence to provide how input tensor's effect (or lack of it) is used for making appropriate transformation into downstream tasks.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 8
+    },
+    {
+        "Name": "manifold_preserving_regularization",
+        "Title": "Manifold-Preserving Regularization for Soft Fold Layers: Enhancing Geometric Awareness in PPO",
+        "Experiment": "Implement a manifold-preserving regularization term for the SoftFold layer. For each input sample in a minibatch, find its `k`-nearest neighbors using cosine similarity (with epsilon value added inside cosine sim), where `k` is a hyperparameter defining the locality and neighbourhood. Perform this *after being passed through* initial `Agent()` embeddings using cosine similarity local distance such that locally distributed approximations made for each vectors scaling. The gradient contribution `vector[i] += ( max_dist - geometry_neighbourhood )` using clipped Euclidean vector for equalized distribution where each is locally averaged where magnitude is a vector and the clipping acts with the most non aligned neighbourhood during updates; This is done *in each vector in network* and *each training updates*. Then average all neighboring-embedded with 'locally scaling embedding vector'. With locality neighbourhood given by vectors, such it locally scales with embedded geometries as 'gradient neighbourhood parameters",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Idea number": 9
+    },
+    {
+        "Name": "ordinal_softfold_layer_scalar",
+        "Title": "Oridnal-Placement sweeping of Normal Vectors With Injection By Gradient Scalar PPO with Soft Fold Layers",
+        "Experiment": "Instead use Gradient Scalar as *Direct Modification*, or gradient-indexed modules/scalar in Agent using similar methods\n\n1. Modify gradient scalars so steepness scalars `beta=beta`, and scale gradients of *Normal Vector N during Agent() updates and randomsearch (with beta's parameter seeding for sweeps as 0=identity)*; Keep and use code ordinal layer position from embedding/injection `Ordinal_layers` , *Now this sweeps directly parameter gradients.*\n\n2. `RandomSearch(with Beta)` seeded where `Agent(Ordinal)` sweeps positions from gradient vectors directly.",
+        "Interestingness": 9,
+        "Feasibility": 9,
+        "Novelty": 8,
+        "Idea number": 10
+    }
+]

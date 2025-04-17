@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "pheromone_inspired_directional_noise",
+        "Title": "Pheromone-Inspired Directional Noise Injection in Soft Fold Layers: Enhancing Exploration in PPO",
+        "Experiment": "Modify the SoftFold layer to inject noise into the direction of the normal vector 'n' before each forward pass. Add a new parameter 'noise_scale' to the SoftFold class, which represents the scale of the noise. This parameter can be either a learnable parameter or a fixed hyperparameter. If noise_scale is input-dependent, add a small neural network (e.g., a single linear layer followed by a Sigmoid activation) that takes the input tensor as input and outputs the noise_scale. In the forward pass, sample a random direction vector 'd' from a Gaussian distribution with mean 0 and standard deviation 1, and normalize it to unit length. Then, add 'noise_scale' * 'd' to the normalized 'n'. Re-normalize 'n' after adding the noise. Compare the training dynamics, convergence speed, and final performance of the PPO agent with the modified SoftFold layer to the baseline model on the LunarLander-v3 environment. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the noise injection. Experiment with different values for the fixed 'noise_scale' (e.g., 0.01, 0.05, 0.1) and different architectures for the noise_scale prediction network (e.g., adding a hidden layer) if an input-dependent noise_scale is used.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A researcher who studies pheromones and their functions in various organisms, including insects, animals, and plants. They are interested in the behavioral and physiological effects of pheromones, as well as their potential applications in fields such as agriculture, animal behavior, and forensic science.",
+        "Idea number": 3
+    },
+    {
+        "Name": "gated_residual_softfold_layer",
+        "Title": "Gated Residual Soft Fold Layer: Adaptive Feature Transformation with a Single Folding Operation",
+        "Experiment": "Modify the Agent class to replace each existing SoftFold layer with a single gated residual SoftFold layer. The gated residual SoftFold layer consists of a SoftFold layer, a learnable gate (a sigmoid activated linear layer that takes the output of the SoftFold layer as input and outputs a scalar between 0 and 1), and a residual connection. Multiply the output of the SoftFold layer by the gate value. Add a residual connection from the input of the SoftFold layer to the output of the gated SoftFold layer. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the gated residual SoftFold layer.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A marine biologist who specializes in the study of marine biogenic habitats, particularly glass sponge reefs. They are interested in designing monitoring programs for these habitats to inform management strategies, even when data and resource limitations are present. They are knowledgeable in the common themes related to indicator selection, sampling methods, and survey design for marine biogenic habitats, and have experience with recent, emerging methods that enhance the capabilities of surveying large areas at high spatial resolution and improve data processing efficiency. They are interested in drawing on these common themes to propose a structured, iterative approach to designing monitoring programs for marine biogenic habitats that allows for rigorous data collection to inform management strategies, even when data and resource limitations are present.",
+        "Idea number": 4
+    },
+    {
+        "Name": "learnable_input_scaling_shifting",
+        "Title": "Learnable Input Scaling and Shifting for Soft Fold Layers: Improving Feature Representation in PPO",
+        "Experiment": "Modify the Agent class to add learnable scaling and shifting parameters before the first SoftFold layer in both the actor and critic networks. Replace the nn.Linear layer with two nn.Parameter tensors: scale and shift, both with the same shape as the input observation space. The forward pass would then simply be: scaled_input = input * scale + shift. Compare the training dynamics, convergence speed, and final performance with the baseline model. Track the episodic return, gradient norms, parameter norms, and the learned scaling and shifting parameters to evaluate the impact of input pre-processing.",
+        "Interestingness": 7,
+        "Feasibility": 8,
+        "Novelty": 5,
+        "Persona": "An agricultural expert who is interested in the history and techniques of farming, particularly those covered in the \"The Whole Art and Trade of Husbandry\" written by Barnaby Googe. The author's use of dialogue format and the inclusion of an alphabetical table and a listing of sources are appealing to those who enjoy learning through conversation and seeking out the most accurate information. The work's focus on the Old English Rules for Purchasing Land adds an element of practicality and relevance to the reader's agricultural knowledge.",
+        "Idea number": 5
+    },
+    {
+        "Name": "input_dependent_hyperplane_magnitude",
+        "Title": "Input-Dependent Hyperplane Magnitude in Soft Fold Layers: Enhancing Responsiveness in PPO",
+        "Experiment": "Modify the SoftFold layer to make the hyperplane magnitude input-dependent. Add a small neural network (e.g., a single linear layer followed by a sigmoid activation to ensure positive magnitude) that takes the input tensor as input and outputs a scalar representing the shift magnitude. In the forward pass, compute the shift magnitude based on the input. Then, scale the normal vector 'n' by this magnitude: n_scaled = n * shift_magnitude. Normalize the n_scaled vector. Use the scaled and normalized normal vector n_scaled in the subsequent calculations (x_dot_n, n_dot_n, etc.). Experiment with different architectures for the shift magnitude prediction network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed hyperplane position. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the input-dependent hyperplane magnitude.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A podiatrist who specializes in the diagnosis and treatment of foot and ankle disorders. They are trained to provide cleaning advice, provide balance-related therapies and treatments, diagnose underlying conditions, relieve foot pain, improve circulation, prevent foot deformities, correct walking problems, and preserve foot health as you age. They are also experts in diagnosing serious foot problems and can provide advice and treatments if you're in Adelaide and need podiatric care.",
+        "Idea number": 6
+    },
+    {
+        "Name": "context_modulated_softfold",
+        "Title": "Context-Modulated Soft Fold Layer: Adaptive Hyperplane Behavior through Global State Representation in PPO",
+        "Experiment": "Modify the SoftFold layer to remove the learnable crease and stretch parameters. Add a context network (a small MLP with 2 layers of 32 units each) that takes the input observation as input and outputs predictions for the crease and stretch parameters. Use sigmoid activation for the stretch prediction to ensure positivity, and linear activation for the crease (or a Tanh to keep it bounded). These predictions are then used as the crease and stretch parameters in the forward pass of the SoftFold layer. Compare the training dynamics, convergence speed, and final performance with the baseline model. Analyze the learned context vectors and the predicted crease and stretch values to understand how the network is adapting the SoftFold layer's behavior. Add L1 regularization to the weights of the context network to encourage feature selection.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A historian specializing in the study of racial and ethnic relations throughout history, particularly focusing on the impact of race and ethnicity on social conflict and change. They are interested in understanding the complex interactions between race and ethnicity in contemporary society, and how these factors shape social issues and political movements. They are also interested in the ways in which race and ethnicity are used by individuals and political organizations for their own objectives. They have a deep understanding of the evolving concepts and theories related to race and ethnicity, and are well-versed in the latest developments in the field. They are likely to have a strong interest in teaching and research, and are constantly seeking out new information and perspectives on race and ethnicity.",
+        "Idea number": 7
+    },
+    {
+        "Name": "input_dependent_normal_vector_scaling",
+        "Title": "Input-Dependent Normal Vector Scaling in Soft Fold Layers: Feature-Specific Hyperplane Adaptation in PPO",
+        "Experiment": "Modify the SoftFold layer to implement input-dependent scaling of the normal vector 'n'. Add a small neural network (e.g., a single linear layer followed by a ReLU activation) that takes the input tensor as input and outputs a vector of the same shape as 'n'. In the forward pass, multiply the normal vector 'n' element-wise by the scaling factors predicted by the network. Normalize the resulting vector to maintain a consistent magnitude. Use the scaled and normalized normal vector in the subsequent calculations (x_dot_n, n_dot_n, etc.). Compare the training dynamics, convergence speed, and final performance with the baseline model. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the feature-specific scaling.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A scientist who specializes in virology and has conducted research on the transmission of foot-and-mouth disease (FMD) in cattle. They are known for their meticulous experimentation and their ability to accurately pinpoint the relationship between when an animal is infectious with FMDV and when they show clinical signs of the infection. Their findings suggest that FMDV only becomes infectious for a brief period of time\u2014approximately half a day after clinical signs of the disease appear. The research is consistent with a rarely tested theory that disease symptoms may be functionally linked to infectiousness. They are calling for practical tools that could diagnose FMDV in the field before clinical signs appear.",
+        "Idea number": 8
+    },
+    {
+        "Name": "feature_wise_input_scaling_softfold",
+        "Title": "Feature-Wise Input Scaling with Learnable Magnitude in Soft Fold Layers: Adaptive Feature Transformation in PPO",
+        "Experiment": "Modify the SoftFold layer to implement feature-wise input scaling of the residual vector with a learnable magnitude. Add a learnable scalar parameter 'input_scale' to the SoftFold layer. In the forward pass, compute the residual vector (the difference between the input and its orthogonal projection onto the hyperplane). Multiply the residual vector element-wise by the input tensor, and then multiply the result by the learnable scalar 'input_scale'. Add the scaled residual vector to the input tensor. Compare the training dynamics, convergence speed, and final performance with the baseline model. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the feature-wise input scaling.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A healthcare professional who is familiar with federal fraud and abuse laws, particularly those related to physicians. They have experience with the False Claims Act, Anti-Kickback Statute, and Physician Self-Referral Law, and understand the penalties and potential consequences for violating these laws. They are aware of the importance of avoiding pass-through billing and pass-through schemes, as well as the cost of fraudulent billing. They are also aware of the potential for government payers to prosecute or fine them for submitting false claims.",
+        "Idea number": 9
+    },
+    {
+        "Name": "direction_aware_crease",
+        "Title": "Direction-Aware Crease in Soft Fold Layers: Enhancing Geometric Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate a direction-aware crease. Instead of a separate network, directly use the dot product of the input and the normal vector (x_dot_n) to modulate the crease parameter. In the forward pass, compute x_dot_n (input_tensor @ self.n). Apply a sigmoid function to x_dot_n: sigmoid(x_dot_n). Multiply the original crease parameter by this sigmoid value to obtain the direction-aware crease: direction_aware_crease = self.crease * sigmoid(x_dot_n). Use the direction-aware crease in the subsequent calculations in the forward pass, replacing the original self.crease. Compare the training dynamics, convergence speed, and final performance with the baseline model. Track the episodic return, gradient norms, and parameter norms to evaluate the impact of the direction-aware crease.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A teacher or educator who is passionate about using writing prompts and tools to enhance students' creativity and critical thinking skills. They are skilled in using The Storymatic, a writing tool that encourages divergent thinking and active storytelling. They are familiar with state standards and Common Core, making sure that their teaching materials align with educational goals and expectations. They are adept at incorporating The Storymatic into their classroom, making it an integral part of their teaching methods. They are experienced in creating engaging prompts and activities that cater to the diverse needs and interests of their students. They are knowledgeable about the benefits of active storytelling and how it can be used to stimulate students' imagination and creativity. They are excited about the prospect of using The Storymatic on field trips, as it provides a unique and interactive way for students to engage with the material. They are a versatile and adaptable teacher, able to adapt their teaching methods to fit the needs of their students and the specific context of their classroom.",
+        "Idea number": 10
+    }
+]

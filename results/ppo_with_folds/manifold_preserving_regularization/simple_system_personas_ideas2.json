@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "residual_stacked_softfold_with_bias",
+        "Title": "Residual Stacked SoftFold Layers with Learnable Bias: Stabilizing Training and Enhancing Representation in PPO",
+        "Experiment": "Modify the Agent class to include residual connections around each SoftFold layer in both the actor and critic networks. Add a learnable bias term to the input of each SoftFold layer. Specifically, add a bias parameter `b` of the same dimension as the input to the SoftFold layer, and modify the forward pass of the SoftFold layer to include `input_tensor + b` before being passed to the SoftFold. The output of the SoftFold layer should then be added to the original input tensor via a residual connection: `output = input_tensor + SoftFold(input_tensor + b)`. Experiment with different numbers of SoftFold layers (e.g., 2, 3) and different initialization strategies for the bias term (e.g., zero initialization, random initialization). Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A full-stack developer who uses the API documentation to build integrated software solutions",
+        "Idea number": 3
+    },
+    {
+        "Name": "action_conditioned_softfold",
+        "Title": "Action-Conditioned SoftFold Layer: Adapting Hyperplanes to Agent Behavior in PPO",
+        "Experiment": "Modify the SoftFold layer to condition the normal vector 'n' on the previous action taken by the agent. In the Agent class, add a linear layer that takes the previous action as input and outputs a normal vector of the same dimension as the SoftFold's width parameter. In the forward pass of the Agent, pass the current observation to both the actor and critic networks. Before each SoftFold layer, pass the previous action through the linear layer to generate the normal vector 'n'. Use this dynamically generated 'n' in the SoftFold layer's forward pass. Note that for the first step in each episode, a zero vector should be used as the 'previous action'. The linear layer should be added as a new attribute of the Agent class and trained along with the other parameters of the network. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A quirky indie film actress who is known for her deep character roles and advocacy for mental health.",
+        "Idea number": 4
+    },
+    {
+        "Name": "input_modulated_crease_v2",
+        "Title": "Input-Modulated Crease (Scaled) in Soft Fold Layers: Enhancing Adaptive Non-Linearity in PPO with Stable Crease Modulation",
+        "Experiment": "Modify the SoftFold layer to make the 'crease' parameter input-dependent, ensuring stability. Instead of directly replacing the 'crease' parameter, learn a modulation factor that scales the existing 'crease'. Add a small neural network (e.g., a single linear layer) that takes the input tensor as input and outputs a scalar value. Apply a sigmoid activation to the output of this network to constrain the modulation factor to the range (0, 1). Multiply the original 'crease' parameter by this modulation factor to obtain the effective 'crease' used in the SoftFold layer's forward pass. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'crease'. The crease prediction network should be added as a new attribute of the SoftFold class and trained along with the other parameters of the network. Initialize the weights and biases of the crease prediction network to produce values close to 0 initially, so the intitial effective crease is close to the original crease.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "The president of a boutique hotel association who provides guidance and resources to aspiring entrepreneurs in the hospitality industry",
+        "Idea number": 5
+    },
+    {
+        "Name": "input_dependent_softfold_affine_transform",
+        "Title": "Input-Dependent SoftFold Affine Transform: Dynamically Adapting Input Distributions for Enhanced Performance in PPO",
+        "Experiment": "Modify the Agent class to include an input-dependent affine transformation (scale and shift) before each SoftFold layer in both the actor and critic networks. Specifically, for each SoftFold layer, add two small neural networks: one to predict the scale parameter 'scale_net' and one to predict the shift parameter 'shift_net'. Both networks should take the input tensor as input and output a tensor of the same dimension as the input to the SoftFold layer. Before passing the input tensor to the SoftFold layer, pass it through 'scale_net' and 'shift_net' to obtain the scale and shift parameters: `scale = scale_net(input_tensor)` and `shift = shift_net(input_tensor)`. Then, apply the affine transformation: `input_transformed = scale * input_tensor + shift`. Finally, pass `input_transformed` to the SoftFold layer. Experiment with different architectures for the scale and shift prediction networks (e.g., a single linear layer, a linear layer followed by a ReLU activation). Initialize the weights and biases of the scale prediction network to produce values close to 1 initially, and the shift prediction network to produce values close to 0 initially. Compare the training dynamics, convergence speed, and final performance with the baseline model. The scale and shift prediction networks should be added as new attributes of the Agent class and trained along with the other parameters of the network.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A native Swede with a passion for linguistic clarity",
+        "Idea number": 6
+    },
+    {
+        "Name": "softfold_ensemble_averaged",
+        "Title": "Averaged SoftFold Ensemble with Learnable Scaling: Stable Representation Learning in PPO",
+        "Experiment": "Modify the Agent class to replace each existing SoftFold layer with an ensemble of SoftFold layers. The number of layers in the ensemble is a hyperparameter 'num_ensemble'. Create a nn.ModuleList containing 'num_ensemble' SoftFold layers. The outputs of these layers will be averaged. After averaging, the result is multiplied by a learnable scalar parameter 'scale', which is a nn.Parameter initialized to 1.0. This scaled output is then passed to the subsequent layer in the network. Experiment with different values for 'num_ensemble' (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, and final performance with the baseline model. The num_ensemble parameter should be added to the Args class to tune.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "a devoted fan of Seve de Campo and winter sports",
+        "Idea number": 7
+    },
+    {
+        "Name": "multiple_parallel_softfold_hyperplanes_weighted_average_v2",
+        "Title": "Multiple Parallel SoftFold Hyperplanes with Weighted Averaging v2: Flexible Non-Linearity in PPO",
+        "Experiment": "Modify the SoftFold layer to use multiple parallel hyperplanes with weighted averaging. Introduce a hyperparameter 'num_hyperplanes' to determine the number of hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where each row represents a normal vector for a hyperplane. Keep a single global 'crease' parameter. Add a learnable vector 'modulation_factors' of shape (num_hyperplanes,), initialized to 1.0. In the forward pass, compute the sigmoid value for each hyperplane independently, using its corresponding normal vector, the global crease, and its modulation factor: p[i] = modulation_factors[i] * crease * (x_dot_n - n_dot_n); sigmoid[i] = sigmoid(p[i]). Normalize the modulation factors to sum to 1: weights = modulation_factors / sum(modulation_factors). For each hyperplane, compute a residual vector: residual_vec[i] = (1 - scale_factor[i]).unsqueeze(1) * N[i], where scale_factor[i] = (input_tensor @ N[i]) / (N[i] @ N[i] + eps). Calculate the weighted sum of the residual vectors: weighted_residual_sum = sum(weights[i] * residual_vec[i]). Finally, return input_tensor + stretch * weighted_residual_sum. Experiment with different values for 'num_hyperplanes' (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model. The num_hyperplanes parameter should be added to the Args class to tune.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A close-knit group of friends who offer emotional support and create a safe space for the client to share their feelings",
+        "Idea number": 8
+    },
+    {
+        "Name": "input_modulated_stretch_v2",
+        "Title": "Input-Modulated Stretch in Soft Fold Layers with Bounded Scaling: Enhancing Adaptive Non-Linearity in PPO",
+        "Experiment": "Modify the SoftFold layer to make the 'stretch' parameter input-dependent. Add a small neural network (e.g., a single linear layer) that takes the input tensor as input and outputs a scalar value. Apply a sigmoid activation to the output of this network. Scale and shift the sigmoid output to be in the range (0.5, 1.5): `scaling_factor = 0.5 + sigmoid(network_output)`. Multiply the original 'stretch' parameter by this scaling factor to obtain the effective 'stretch' used in the SoftFold layer's forward pass. Experiment with different architectures for the stretch prediction network (e.g., adding a hidden layer). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'stretch'. The stretch prediction network should be added as a new attribute of the SoftFold class and trained along with the other parameters of the network. Initialize the weights and biases of the stretch prediction network to produce values close to 0 initially, so the initial scaling_factor is close to 1 and the intitial effective stretch is close to the original stretch.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A movie prop collector with a special focus on Star Wars memorabilia",
+        "Idea number": 9
+    },
+    {
+        "Name": "structured_noisy_softfold_hyperplane",
+        "Title": "Structured Noisy SoftFold Hyperplane: Guiding Exploration of Folding Directions in PPO",
+        "Experiment": "Modify the SoftFold layer to add structured noise to the normal vector 'n' before each forward pass. Add two learnable parameters to the SoftFold class: 'noise_std' (initialized to a small value, e.g., 0.01) and 'delta' (a vector of the same dimension as 'n', initialized randomly). In the forward pass, add 'noise_std * delta' to 'n' before normalizing it. Use this noisy 'n' in the SoftFold layer's forward pass. Experiment with different initialization values for 'noise_std' (e.g., 0.001, 0.01, 0.1) and different initialization strategies for 'delta' (e.g., random normal, random uniform). Compare the training dynamics, convergence speed, and final performance with the baseline model. Both 'noise_std' and 'delta' parameters should be added as new attributes of the SoftFold class and trained along with the other parameters of the network. The normalization of the noisy 'n' vector is important for stability.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A college student who stumbled upon Stoicism and has found it life-changing",
+        "Idea number": 10
+    }
+]

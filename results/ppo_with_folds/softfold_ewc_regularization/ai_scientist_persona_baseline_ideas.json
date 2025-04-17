@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "softfold_with_weighted_skip_connections",
+        "Title": "Soft Fold Layers with Weighted Skip Connections: Enhancing Feature Learning Adaptability in PPO",
+        "Experiment": "Modify the Agent class to incorporate weighted skip connections between SoftFold layers in both the actor and critic networks. Add a hyperparameter 'use_skip_connections' to the Args class, defaulting to False. If 'use_skip_connections' is True, modify the actor and critic networks to include weighted skip connections between the SoftFold layers. Specifically, after each SoftFold layer, add a learnable weight parameter. Multiply the output of the previous layer by this weight before adding it to the current layer's output. Initialize the weight to 0.1. Compare the training dynamics, convergence speed, and final performance with and without skip connections.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A film critic known for being frankly disinterested in celebrity gossip and reality TV shows.",
+        "Idea number": 3
+    },
+    {
+        "Name": "layer_output_dependent_crease",
+        "Title": "Layer Output-Dependent Crease Parameter in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to make the crease parameter dependent on the *output* of the previous layer. Replace the single crease parameter with a small neural network (e.g., a single linear layer followed by a ReLU activation) that takes the output of the previous layer as input and outputs a single value representing the crease. The forward pass will then use this dynamically predicted crease value to compute the folding effect. Experiment with different architectures for the crease prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned crease.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A WWII aviation enthusiast from the UK",
+        "Idea number": 4
+    },
+    {
+        "Name": "state_dependent_softfold_params",
+        "Title": "State-Dependent Soft Fold Parameters: Enhancing Adaptability in PPO with Dynamic Folding",
+        "Experiment": "Modify the SoftFold layer to make the crease and stretch parameters dependent on the input state. Add a shared linear layer that takes the input tensor (of appropriate SoftFold width) as input and outputs a feature vector. Then, add two separate linear layers that take this feature vector as input and output the crease and stretch values, respectively. The forward pass will then use these dynamically predicted crease and stretch values to compute the folding effect. Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed or learned crease and stretch.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A human rights lawyer working to develop legal frameworks for climate migrants",
+        "Idea number": 5
+    },
+    {
+        "Name": "state_dependent_normal_vector_offset",
+        "Title": "State-Dependent Normal Vector with Offset in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to predict an offset to a base normal vector, making the normal vector 'n' dependent on the input state. Keep the existing normal vector 'n' as the base normal vector. Add a small neural network (e.g., a single linear layer followed by a ReLU activation) that takes the input tensor as input and outputs an offset vector of the same dimension as the input. Scale this offset vector by a small learnable parameter (offset_scale). Add the scaled offset vector to the base normal vector, and then normalize the resulting vector to obtain the normal vector 'n'. The forward pass will then use this dynamically predicted normal vector to compute the folding effect. Experiment with different architectures for the offset vector prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "An environmental regulator responsible for implementing policies to reduce industrial pollution in coastal areas",
+        "Idea number": 6
+    },
+    {
+        "Name": "parallel_softfold_with_linear_combination",
+        "Title": "Parallel Soft Fold Layers with Linear Combination: Enhancing Representation Learning with Adaptively Combined Folding Patterns in PPO",
+        "Experiment": "Modify the Agent class to incorporate multiple parallel SoftFold layers in both the actor and critic networks. Add a hyperparameter 'num_folds' to the Args class, defaulting to 1. If 'num_folds' is greater than 1, modify the actor and critic networks to include multiple parallel SoftFold layers. Specifically, create a list of SoftFold layers, each with the same input dimension. The input tensor will be passed through each SoftFold layer in parallel. The outputs of the SoftFold layers will then be passed through a linear layer that combines them. The output of the linear layer will be the input to the next layer in the network. Ensure that the output dimension of the linear combination layer is the same as the input dimension to the parallel SoftFold layers. Experiment with different values for 'num_folds' (e.g., 2, 4, 8) and compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer and concatenation-based parallel SoftFold layers.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A freelance contractor specializing in developing XML parsers for Android applications",
+        "Idea number": 7
+    },
+    {
+        "Name": "state_dependent_normal_vector_direct_weight_decay",
+        "Title": "State-Dependent Normal Vector with Direct Prediction and Weight Decay Regularization in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to predict the normal vector 'n' directly from the input state. Remove the existing normal vector 'n' as a nn.Parameter. Add a small neural network (e.g., a single linear layer followed by a ReLU activation) that takes the input tensor as input and outputs a vector of the same dimension as the input. Normalize this vector to obtain the normal vector 'n'. Add a weight decay term to the optimizer for the parameters of the normal vector prediction network. This will encourage the network to keep the normal vector small, which will prevent it from changing too abruptly. Experiment with different architectures for the normal vector prediction network (e.g., adding a hidden layer, using different activation functions) and different values for the weight decay. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A software engineer developing a custom routing algorithm to reduce fuel consumption and delivery time",
+        "Idea number": 8
+    },
+    {
+        "Name": "cultural_archive_softfold",
+        "Title": "Cultural Archive Soft Fold Layers: Enhancing Adaptability with Diverse Folding Patterns in PPO",
+        "Experiment": "Modify the SoftFold layer to maintain a 'cultural archive' of multiple normal vectors. \n\n1.  Add a hyperparameter `num_vectors` to the Args class, defaulting to 4. This determines the size of the archive.\n2.  In the SoftFold layer's `__init__`, create a list of `num_vectors` normal vectors, each initialized as nn.Parameter. Initialize the vectors to be approximately orthogonal to each other. A simple method for doing this is to create a random matrix of size (width, num_vectors), perform a QR decomposition, and use the columns of the Q matrix as the initial normal vectors.\n3.  Replace the linear layer and softmax with a simpler gating mechanism. For each normal vector, compute the dot product between the input tensor and the normal vector. Apply a sigmoid activation to each dot product to obtain a weight between 0 and 1. These are the selection weights.\n4.  Compute a weighted average of the normal vectors using the sigmoid weights. Normalize the resulting vector to obtain the effective normal vector 'n'.\n5.  The forward pass will then use this dynamically combined 'n' to compute the folding effect.\n6. Experiment with different values for `num_vectors` (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed or learned 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "An anthropologist who travels globally to learn more about shrinking tribal civilizations and their cultures",
+        "Idea number": 9
+    },
+    {
+        "Name": "softfold_mixture_of_sigmoids_simple_weights",
+        "Title": "Soft Fold Layers with Mixture of Sigmoids and Simple Weights: Enhancing Decision Boundary Smoothness in PPO with Reduced Complexity",
+        "Experiment": "Modify the SoftFold layer to use a mixture of sigmoids with a simplified weighting scheme. Add a hyperparameter 'num_sigmoids' to the Args class, defaulting to 3. Create 'num_sigmoids' crease parameters. Calculate 'num_sigmoids' sigmoids, each with its own crease. Replace the linear layer + softmax with 'num_sigmoids' learnable weights. Normalize the weights so they sum to 1. The output will be a weighted average of the 'num_sigmoids'. Experiment with different values for 'num_sigmoids' (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "I am the lead singer of a small indie rock band that occasionally performs at local venues and dives. I've always been passionate about music, tech, and podcasting, and I admire people who carve a niche for themselves in digital media.",
+        "Idea number": 10
+    }
+]

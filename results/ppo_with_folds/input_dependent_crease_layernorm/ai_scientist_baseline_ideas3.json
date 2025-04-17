@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "adaptive_hyperplanes_with_regularization",
+        "Title": "Adaptive Hyperplanes with Regularization in Soft Fold Layers: Enhancing Stability and Representational Power in PPO",
+        "Experiment": "Modify the SoftFold layer to learn adaptive hyperplanes with regularization. Replace the fixed normal vector 'n' with a small neural network (e.g., a single linear layer or a two-layer MLP) that takes the input tensor as input and outputs a normal vector 'n_delta' of shape (width,). Add a fixed, randomly initialized normal vector 'n_fixed'. The actual normal vector 'n' used in the forward pass will be n = normalize(n_fixed + n_delta). Introduce a regularization term to the loss function that penalizes large deviations of 'n_delta' from zero (e.g., L2 regularization). This will encourage the network to start with a stable hyperplane and gradually adapt it. Instead of predicting a separate offset 'p', predict a scaling factor 's' for the original 'n'. The forward pass will then use the dynamically generated 'n' and 's' to compute the folding effect. Experiment with different architectures for the normal vector prediction network, different regularization strengths, and different initializations for 'n_fixed'. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'. Track the distribution of the generated normal vectors and scaling factors to understand how the network is adapting the hyperplanes.",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Idea number": 3
+    },
+    {
+        "Name": "flexible_gated_activations_softfold",
+        "Title": "Flexible Gated Activation Functions in Soft Fold Layers: Empowering Dynamic Adaptation Through User-Defined Combinations",
+        "Experiment": "Modify the SoftFold layer to enable flexible gated combinations of activation functions. Instead of predefining specific combinations, allow the user to specify two activation functions (e.g., 'sigmoid', 'relu', 'leakyrelu', 'elu') and a gating mechanism. Implement options for a single learnable gate or two learnable gates. If a single gate is used, the output will be `gate * activation1(x) + (1 - gate) * activation2(x)`. If two gates are used, the output will be `gate1 * activation1(x) + gate2 * activation2(x)`, with a constraint that `gate1 + gate2 = 1`. Provide options for initializing the gate parameter(s) to different values (e.g., 0.0, 0.5, 1.0). Experiment with different activation function pairs, gating mechanisms, and initialization strategies. Compare the training dynamics, convergence speed, and final performance of PPO with different flexible gated activation functions in the SoftFold layers. Also, include the option to remove the clamping of the sigmoid function. Specifically:\n\n1.  Add `activation1` and `activation2` arguments to the SoftFold class, allowing the user to specify the two activation functions.\n2.  Add a `gating_mechanism` argument, which can take values 'single_gate' or 'two_gates'.\n3.  Add a `gate_initialization` argument, allowing the user to specify the initial value(s) for the gate(s).\n4.  Implement the corresponding gated activation functions within the forward pass of the SoftFold layer.\n5.  Create learnable parameter(s) for the gate(s), initialized according to the `gate_initialization` argument.\n6.  Modify the forward pass to compute the gated combination of activation functions, ensuring that the gates sum to 1 if `gating_mechanism` is 'two_gates'.\n7.  Run PPO with different combinations of activation functions, gating mechanisms, and gate initializations, and compare the results.\n8. Compare the training performance with the original sigmoid activation function.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Idea number": 4
+    },
+    {
+        "Name": "multiple_hyperplanes_softfold",
+        "Title": "Multiple Hyperplanes in Soft Fold Layers: Enhancing Representational Capacity in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes. Replace the single normal vector 'n' with a matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. For each hyperplane, compute the scale_factor and residual_vec as in the original SoftFold layer. Learn a weight for each hyperplane. Then, compute the weighted sum of the residual vectors. Apply the stretch and sigmoid function to this combined residual vector, and add it to the input. Specifically:\n\n1. Add a `num_hyperplanes` argument to the SoftFold class, allowing the user to specify the number of hyperplanes.\n2. Replace the single normal vector `n` with a matrix `N` of shape (num_hyperplanes, width).\n3. Implement the folding operation for each hyperplane, computing scale_factor and residual_vec for each.\n4. Add a learnable weight for each hyperplane (num_hyperplanes weights in total).\n5. Compute the weighted sum of the residual vectors.\n6. Apply the stretch and sigmoid function to this combined residual vector, and add it to the input.\n7. Experiment with different values for `num_hyperplanes` (e.g., 2, 4, 8).\n8. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Idea number": 5
+    },
+    {
+        "Name": "input_dependent_folding_strength",
+        "Title": "Input-Dependent Folding Strength of Multiple Hyperplanes in Soft Fold Layers: Enhancing Selective Adaptation in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes with input-dependent folding strength. Replace the single normal vector 'n' with a matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. For each hyperplane, compute the scale_factor and residual_vec as in the original SoftFold layer. Add a small neural network (e.g., a single linear layer followed by a sigmoid activation) that takes the input tensor as input and outputs a scaling factor for each hyperplane's sigmoid output. The forward pass will compute the sigmoid output for each hyperplane independently. Then, it will multiply each sigmoid output by the corresponding scaling factor from the network. These scaled sigmoid outputs will be used to scale the residual vectors, which are then summed and added to the input. Specifically:\n\n1. Add a `num_hyperplanes` argument to the SoftFold class, allowing the user to specify the number of hyperplanes.\n2. Replace the single normal vector `n` with a matrix `N` of shape (num_hyperplanes, width).\n3. Implement the folding operation for each hyperplane, computing scale_factor and residual_vec for each.\n4. Add a small neural network (the 'scaling network') that takes the input tensor as input and outputs a scaling factor for each hyperplane. The output of this network should be passed through a sigmoid function to constrain the scaling factors to the range [0, 1].\n5. Compute the sigmoid output for each hyperplane.\n6. Multiply each sigmoid output by the corresponding scaling factor from the scaling network.\n7. Scale the residual vector of each hyperplane by its scaled sigmoid output.\n8. Sum the scaled residual vectors and add the result to the input.\n9. Experiment with different values for `num_hyperplanes` (e.g., 2, 4, 8) and different architectures for the scaling network (e.g., adding a hidden layer).\n10. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 6
+    },
+    {
+        "Name": "cascaded_softfold_layers_with_regularized_skip_connections",
+        "Title": "Cascaded SoftFold Layers with Regularized Skip Connections: Enhancing Feature Propagation and Stability in PPO",
+        "Experiment": "Modify the Agent class to use a fixed number of SoftFold layers (e.g., 3) with optional regularized skip connections in both the actor and critic networks. Add a new argument to the Args dataclass, `use_skip_connections`, to control whether to use skip connections, and a `skip_connection_reg_coef` argument to control the strength of the L2 regularization on the skip connection weights. Train the PPO agent with `num_softfold_layers` fixed to 3, and varying `use_skip_connections` (True, False) and `skip_connection_reg_coef` (e.g., 0.0, 0.001, 0.01) and compare the training dynamics, convergence speed, and final performance with the baseline model (which has 2 SoftFold layers and no skip connections). Specifically:\n\n1. Fix `num_softfold_layers` to 3 in the Agent class.\n2. Add a `use_skip_connections` argument to the Args dataclass with a default value of False.\n3. Add a `skip_connection_reg_coef` argument to the Args dataclass with a default value of 0.0.\n4. Modify the Agent class to accept the `use_skip_connections` and `skip_connection_reg_coef` arguments.\n5. In the Agent class, dynamically construct the actor and critic networks with 3 SoftFold layers. If `use_skip_connections` is True, add a learnable weight to each skip connection and add the output of each SoftFold layer (multiplied by the skip connection weight) to the input of the subsequent SoftFold layer.\n6. Add an L2 regularization term to the loss function that penalizes the skip connection weights, with a strength controlled by `skip_connection_reg_coef`.\n7. Ensure that the first and last layers of the actor and critic networks remain the same as in the original implementation.\n8. Train the PPO agent with different values for `use_skip_connections` and `skip_connection_reg_coef` and compare the results.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 7
+    },
+    {
+        "Name": "weighted_residual_softfold_networks",
+        "Title": "Weighted Residual Connections around SoftFold Layers: Enhancing Gradient Flow and Adaptability in PPO",
+        "Experiment": "Modify the Agent class to add weighted residual connections around the SoftFold layers in both the actor and critic networks. Implement options for adding residual connections after each SoftFold layer, with a learnable weight for each connection. Specifically:\n\n1. Add a `use_residual_connections` argument to the Args dataclass with a default value of False.\n2. Modify the Agent class to accept the `use_residual_connections` argument.\n3. In the Agent class, dynamically construct the actor and critic networks. If `use_residual_connections` is True, after each SoftFold layer, add a learnable weight parameter. Multiply the input of the SoftFold layer by this weight, and add the result to the output of the SoftFold layer. Initialize the weight to 0.1.\n4. Add an L2 regularization term to the loss function that penalizes the residual connection weights, with a strength controlled by `residual_connection_reg_coef`.\n5. Train the PPO agent with and without residual connections and compare the training dynamics, convergence speed, and final performance.\n6. Also, experiment with different number of Softfold layers in the Actor and Critic networks.\n7. Track the gradients in the network, especially the gradients through the SoftFold layers. The gradients should be higher if residual connections are used.\n8. Ensure that the first and last layers of the actor and critic networks remain the same as in the original implementation.\n9. Add a `residual_connection_reg_coef` argument to the Args dataclass with a default value of 0.0.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Idea number": 8
+    },
+    {
+        "Name": "input_dependent_global_residual_scaling_multiple_hyperplanes",
+        "Title": "Input-Dependent Global Residual Scaling of Multiple Hyperplanes in Soft Fold Layers: Enhancing Selective Adaptation in PPO with Shared Scaling",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes with input-dependent global residual scaling. Replace the single normal vector 'n' with a matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. For each hyperplane, compute the scale_factor and residual_vec as in the original SoftFold layer. Add a small neural network (e.g., a single linear layer followed by a sigmoid activation) that takes the input tensor as input and outputs a single scaling factor. The forward pass will compute the sigmoid output for each hyperplane independently. Then, it will multiply *each* residual vector by the *same* scaling factor from the network. These scaled residual vectors are then summed and added to the input. Specifically:\n\n1. Add a `num_hyperplanes` argument to the SoftFold class, allowing the user to specify the number of hyperplanes.\n2. Replace the single normal vector `n` with a matrix `N` of shape (num_hyperplanes, width).\n3. Implement the folding operation for each hyperplane, computing scale_factor, sigmoid, and residual_vec for each.\n4. Add a small neural network (the 'scaling network') that takes the input tensor as input and outputs a *single* scaling factor. The output of this network should be passed through a sigmoid function to constrain the scaling factor to the range [0, 1].\n5. Multiply *each* residual vector by the *same* scaling factor from the scaling network.\n6. Sum the scaled residual vectors and add the result to the input.\n7. Experiment with different values for `num_hyperplanes` (e.g., 2, 4, 8) and different architectures for the scaling network (e.g., adding a hidden layer).\n8. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Idea number": 9
+    },
+    {
+        "Name": "input_dependent_hyperplane_scaling",
+        "Title": "Input-Dependent Hyperplane Scaling in Soft Fold Layers: Enhancing Adaptability and Stability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn an input-dependent scaling factor for the hyperplane position. Keep the normal vector 'n' as a learnable parameter, but introduce a small neural network (e.g., a single linear layer followed by a Tanh activation) that takes the input tensor as input and outputs a scaling factor 'scale' (a scalar). The hyperplane will then pass through the point defined by '(1 + scale) * n'. The forward pass will compute the x_dot_n as input_tensor @ n, and n_dot_n as ((1 + scale) * n) @ ((1 + scale) * n). Add an L2 regularization term to the loss function that penalizes the magnitude of the scaling factor. Experiment with different architectures for the scaling factor prediction network (e.g., adding a hidden layer) and different regularization strengths, and compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed hyperplane position (where scale is always zero).",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Idea number": 10
+    }
+]

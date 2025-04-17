@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "multi_hyperplane_nonlinear_combination_averaged",
+        "Title": "Multi-Hyperplane Soft Fold Layers with Averaged Non-linear Combination: Enhancing Representation Power in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. Similarly, create a learnable vector 'creases' of shape (num_hyperplanes,). In the forward pass, compute the folding effect for each hyperplane independently, resulting in a tensor of shape (batch_size, width, num_hyperplanes). Then, average across the last dimension (num_hyperplanes) resulting in a tensor of shape (batch_size, width). Pass the averaged tensor through a small neural network (e.g., two linear layers with a Tanh activation in between). The output of this network will be added to the original input tensor. Experiment with different values for num_hyperplanes (e.g., 2, 4, 8) and different architectures for the combination network. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A manager who is responsible for managing different aspects of an organization and determining effective tools for increasing customer satisfaction. They are also interested in measuring customer satisfaction, cost per unit, and cycle time of products. They are looking for ways to improve the service quality of products and the overall effectiveness of the organization. They are interested in benchmarking tools to compare their organization's activities with their competitors and identify areas for improvement. They are looking for ways to maintain their competitive edge and focus on performance measurement to enhance productivity, profitability, and market position.",
+        "Idea number": 3
+    },
+    {
+        "Name": "softfold_ensemble",
+        "Title": "Soft Fold Layer Ensembles: Enhancing Representation Learning in PPO",
+        "Experiment": "Create a new module, `SoftFoldEnsemble`, that contains multiple `SoftFold` layers (num_folds is a hyperparameter). Each `SoftFold` layer in the ensemble will have its own independently learned parameters. The forward pass of the `SoftFoldEnsemble` will pass the input through each `SoftFold` layer in the ensemble. The outputs of the `SoftFold` layers will be averaged. Experiment with different ensemble sizes (e.g., 2, 4, 8) and compare the performance with the original `SoftFold` layer in the PPO agent on the LunarLander environment. Modify the Agent class to incorporate the `SoftFoldEnsemble`. Specifically, replace the existing `SoftFold` layers with `SoftFoldEnsemble` layers. The key functions to modify are `__init__` in the Agent class and add a new class `SoftFoldEnsemble`.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Persona": "A scientist who studies the impact of human activities on biodiversity, focusing on the causes and effects of habitat loss, pollution, overexploitation, climate change, and other factors. They are interested in developing strategies to protect and conserve biodiversity, and are dedicated to understanding the complex interplay between humans and the natural world.",
+        "Idea number": 4
+    },
+    {
+        "Name": "normalized_softfold",
+        "Title": "Normalized Soft Fold Layers: Efficient Environment-Aware Adaptation for Enhanced Reinforcement Learning",
+        "Experiment": "Modify the SoftFold layer to dynamically adjust the normal vector 'n' based on the environment state. Add a state encoder network that takes the output of the previous layer as input and outputs a vector of the same dimension as the normal vector 'n'. Add the output of the state encoder to the normal vector 'n' and normalize the resulting vector. Compare the performance of the modified SoftFold layer with the original SoftFold layer on the LunarLander environment. Specifically, modify the `__init__` and `forward` functions of the `SoftFold` class. Add a new `StateEncoder` class. Modify the Agent class to incorporate the `SoftFold` layer.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A military engineer who played a crucial role in the evacuation of British Expeditionary Force from Dunkirk during World War II. Captain Pearce was a captain in the Royal Navy and was responsible for the evacuation of troops from Dunkirk. He led a team of Wimpey workers, who built concrete pillboxes and fired from hexagonal concrete pillboxes to stop invasion barges and tanks. His team also placed spikes and barbed wire to catch invasion barges and tanks. Captain Pearce's leadership and expertise in engineering played a significant role in the success of the evacuation.",
+        "Idea number": 5
+    },
+    {
+        "Name": "softfold_crease_modulation",
+        "Title": "Soft Fold Layer Crease Modulation: Enhancing Feature Representation through Inter-Layer Crease Parameter Communication in PPO",
+        "Experiment": "Modify the Agent class to enable communication between the SoftFold layers in the actor and critic networks. Specifically, the output of the first SoftFold layer in the actor network will be used to modulate the crease parameter of the second SoftFold layer in the actor network, and similarly for the critic network. Add a linear layer that transforms the output of the first SoftFold layer into a scalar value. Add this scalar value to the crease parameter of the second SoftFold layer. Compare the training dynamics, convergence speed, and final performance with the baseline model where SoftFold layers operate independently. Modify the Agent class, focusing on the `__init__` and `forward` methods of the actor and critic networks. Implement the linear layer for modulating the crease parameter.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A naturalist or a mycologist interested in the study of fungi, particularly in their taxonomy, ecological relationships, and medicinal uses. They are particularly interested in the characteristics of Hydnellum scrobiculatum and its association with pine trees. They are also interested in the symbiotic relationship between Hydnellum species and trees, and the protective chemicals they may contain.",
+        "Idea number": 6
+    },
+    {
+        "Name": "stateconditioned_softfold_regularized",
+        "Title": "Regularized State-Conditioned Soft Fold Layers: Stable and Continuous Environment-Aware Adaptation for Enhanced Reinforcement Learning",
+        "Experiment": "Modify the SoftFold layer to dynamically adjust the normal vector 'n' based on the environment state. Add a state encoder network (e.g., a single linear layer or a small MLP with one hidden layer) that takes the input tensor (environment state) as input and outputs a vector of the same dimension as the normal vector 'n'. The output of the state encoder is added to a base normal vector 'n_base', which is a learnable parameter. The resulting vector is then normalized to ensure it has unit length. Add a regularization term to the loss function that penalizes large changes in the normal vector. Specifically, calculate the L2 norm of the output of the state encoder and add it to the overall loss, scaled by a regularization coefficient (e.g., 0.001). Use this state-conditioned 'n' to compute the folding effect. Compare the performance of the modified SoftFold layer with the original SoftFold layer on the LunarLander environment. Specifically, modify the `__init__` and `forward` functions of the `SoftFold` class. Add a new `StateEncoder` class. Modify the Agent class to incorporate the `SoftFold` layer. Modify the training loop to include the regularization term in the loss calculation. Experiment with different architectures for the state encoder network (e.g., linear layer, small MLP) and different activation functions.",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A person who is passionate about sustainable agriculture and the role of family farmers in eradicating hunger and conserving natural resources. They are aware of the challenges faced by family farmers, including the need for innovative farming techniques, the importance of preserving natural resources, and the need for a supportive policy environment. They are committed to supporting family farmers and creating the enabling environment they need to thrive. They recognize the critical role family farmers play in food security and sustainable development and are willing to take action to promote their success.",
+        "Idea number": 7
+    },
+    {
+        "Name": "parallel_combined_softfold",
+        "Title": "Parallel Combined Soft Fold Layers: Enhancing Feature Representation through Independent Multi-Stage Folding with Combination in PPO",
+        "Experiment": "Modify the SoftFold layer to perform multiple folds in parallel, then combine the results. Introduce a hyperparameter `num_folds` to control the number of parallel folds. Replace the single normal vector 'n' with a list of 'n' vectors, one for each fold. Similarly, create a list of 'crease' parameters, one for each fold. In the forward pass, the original input tensor will be passed through the folding operation `num_folds` times, each time using a different 'n' and 'crease' parameter, and importantly each time using the *original* input. The outputs of all folds will then be combined using a weighted average. The weights for the weighted average will be learned parameters. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single fold. Modify the `__init__` and `forward` functions of the `SoftFold` class. Add learnable parameters for the weighted average. The key functions to modify are `__init__` and `forward` in the SoftFold class. Experiment with different values for num_folds (e.g., 2, 3, 4).",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A food safety expert who is deeply concerned about the welfare of animals and the quality of food products. They are familiar with the European food safety policy and its principles, including the use of system solutions to minimize risks and constant supervision at each stage of production. They are also aware of the importance of traceability in the food chain and the need for full transparency in terms of origin, composition, labeling, and use of food. They are passionate about ensuring that consumers can be sure that they are eating safe and tasty products.",
+        "Idea number": 8
+    },
+    {
+        "Name": "adversarial_softfold_fgsm",
+        "Title": "Adversarial Training with FGSM for Soft Fold Layers: Enhancing Robustness in PPO",
+        "Experiment": "Modify the training loop to incorporate adversarial training using a Fast Gradient Sign Method (FGSM)-like approach. Before each update epoch, generate adversarial examples by: 1) enabling gradient calculation for the input states, 2) calculating the gradient of the *policy loss* with respect to the input states, 3) adding a small perturbation (scaled by a hyperparameter 'epsilon') in the direction of the sign of the gradient, 4) detaching the perturbed states to prevent gradient flow during the policy update. Add a small epsilon value (e.g. 1e-8) to the gradient before taking the sign to avoid zero gradients. Train the agent on both the original and perturbed states. The loss function will be the standard PPO loss, calculated on both original and adversarially perturbed states, and summed. Compare the performance of the adversarially trained agent with the baseline agent on both the original LunarLander environment and a slightly modified version of the environment with added noise. Specifically, modify the `run_experiment` function to generate adversarial examples using the gradients and modify the loss calculation. Add a hyperparameter for the magnitude of the perturbation ('epsilon'). This will require changes to the training loop within the `run_experiment` function, specifically where the policy and value function losses are calculated. The perturbation will be calculated with torch.autograd.grad.",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A historian who specializes in the study of the Cold War and its impact on the Eastern Bloc countries, particularly the Soviet Union, Bulgaria, Czechoslovakia, Hungary, Poland, and Romania. Their knowledge and interest lie in the economic policies, trade agreements, and political developments within these countries during the period of Comecon. They are particularly interested in the economic integration efforts of Comecon and its impact on the economies of the Eastern Bloc. They also have a keen interest in the collapse of communist governments across eastern Europe in 1989-90 and the subsequent shift towards private enterprise and market-type systems of pricing.",
+        "Idea number": 9
+    },
+    {
+        "Name": "gated_hyperplane_softfold",
+        "Title": "Gated Hyperplane Soft Fold Layers: Input-Dependent Region-Specific Folding for Enhanced Reinforcement Learning",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes with a gating mechanism. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. Similarly, create a learnable vector 'creases' of shape (num_hyperplanes,). Add a gating network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_hyperplanes,). In the forward pass, compute the folding effect for each hyperplane independently, resulting in a tensor of shape (batch_size, width, num_hyperplanes). Then, compute a weighted sum of the outputs of each hyperplane using the weights from the gating network, resulting in a tensor of shape (batch_size, width). Add an entropy regularization term to the loss function to encourage the gating network to use all hyperplanes. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane. Specifically, modify the `__init__` and `forward` functions of the `SoftFold` class. Add a new `GatingNetwork` class. Modify the Agent class to incorporate the `SoftFold` layer. Modify the training loop to include the entropy regularization term in the loss calculation. Experiment with different values for num_hyperplanes (e.g., 2, 4, 8) and different architectures for the gating network (e.g., adding a hidden layer, using different activation functions).",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A community leader and advocate for environmental conservation, specifically focusing on the preservation of the Island's natural resources and the protection of its beaches. Durkee is passionate about the impact of climate change on the Island and has dedicated her career to finding solutions to mitigate its effects. She is known for her dedication to the conservation of the Vineyard's beaches and has been instrumental in securing funding for erosion control projects. Her expertise in environmental science and her commitment to the community make her a valuable asset to the Island's conservation efforts.",
+        "Idea number": 10
+    }
+]

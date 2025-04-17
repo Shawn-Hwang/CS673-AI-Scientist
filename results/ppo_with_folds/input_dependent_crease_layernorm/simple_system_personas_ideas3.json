@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "parallel_softfold_combination_fixed_weights_width_reduction",
+        "Title": "Parallel Combination of SoftFold Layers with Fixed Weights and Width Reduction for Efficient Representation Learning in PPO",
+        "Experiment": "Modify the Agent class to implement a parallel SoftFold architecture. Instead of a single SoftFold layer with width 'w', the input to each MLP block is fed into 'k' multiple SoftFold layers in parallel. Each of these SoftFold layers will have a reduced width of 'w/k'. The outputs of these SoftFold layers are then concatenated, resulting in a total width of 'w'. Use a fixed, non-learnable weighting scheme (e.g., averaging or predefined weights) to combine the outputs of the concatenated SoftFold layers, before passing the result to the next linear layer in the MLP. Experiment with different numbers of parallel SoftFold layers ('k') and different fixed weighting schemes. Compare the training dynamics, convergence speed, final performance, and parameter count with the baseline model using a single SoftFold layer.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "an English classic literature enthusiast who likes to use colorful and fanciful metaphors",
+        "Idea number": 3
+    },
+    {
+        "Name": "softfold_tanh_swap",
+        "Title": "SoftFold-Tanh Order Swap: Investigating the Impact of Layer Placement on Representation Learning in PPO",
+        "Experiment": "Modify the Agent class to swap the order of the SoftFold layer and the Tanh activation. Instead of Linear -> Tanh -> SoftFold, the new architecture will be Linear -> SoftFold -> Tanh. This change will be applied to both the actor and critic networks. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 7,
+        "Feasibility": 9,
+        "Novelty": 6,
+        "Persona": "A renowned chef who has experienced a similar scandal and offers support and advice on handling the situation",
+        "Idea number": 4
+    },
+    {
+        "Name": "input_dependent_crease",
+        "Title": "Input-Dependent Crease Parameter in Soft Fold Layers: Enhancing Adaptability in PPO with Dynamic Folding Intensity",
+        "Experiment": "Modify the SoftFold layer to make the crease parameter input-dependent. Replace the single learnable or fixed 'crease' with a small neural network consisting of a single linear layer followed by a sigmoid activation. This network takes the input tensor as input and outputs a scalar value between 0 and 1, which is then scaled by a hyperparameter 'crease_scale' (e.g., 10.0) to produce the final crease value. The forward pass will use this dynamically predicted 'crease' value to compute the folding effect. Experiment with different values for 'crease_scale'. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'crease'.",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A retired netball player who was a rival of the Southern Sting during their peak years.",
+        "Idea number": 5
+    },
+    {
+        "Name": "cascaded_softfold_layers_linear_width_reduction",
+        "Title": "Cascaded SoftFold Layers with Linear Width Reduction: Exploring Efficient Sequential Folding for Enhanced Representation Learning in PPO",
+        "Experiment": "Modify the Agent class to implement cascaded SoftFold layers with linear width reduction. Introduce a hyperparameter 'k' representing the number of SoftFold layers. The first SoftFold layer will have the original width (64). Subsequent SoftFold layers will have linearly decreasing widths, such that the last SoftFold layer has a minimum width of 4. For example, if k=4, the widths would be 64, 44, 24, and 4. No padding is necessary. Experiment with different values for 'k' (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, final performance, and parameter count with the baseline model using a single SoftFold layer and the previous 'cascaded_softfold_layers' experiment. This will involve modifying the Agent class's __init__ method to instantiate multiple SoftFold layers in sequence with linearly decreasing widths and modifying the forward pass of the actor and critic networks to pass the input through each SoftFold layer in the sequence.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A devout Catholic with a deep devotion to the Blessed Virgin Mary, often organizing Marian prayer groups",
+        "Idea number": 6
+    },
+    {
+        "Name": "softfold_decorrelation_regularization",
+        "Title": "SoftFold with Decorrelation Regularization: Balancing Feature Independence and Task Performance in PPO",
+        "Experiment": "Modify the SoftFold layer and the training loop to incorporate a decorrelation regularization term in the loss function. In the SoftFold's forward pass, store the output tensor before the return. Detach this output tensor using `.detach()` to prevent backpropagation through the correlation calculation. Calculate the correlation matrix of the features (columns) of the detached output tensor. The correlation matrix can be calculated as `C = X.T @ X`, where X is the detached output tensor with samples as rows and features as columns. Normalize C by dividing by the number of samples. The decorrelation regularization term is then the sum of squares of the off-diagonal elements of the correlation matrix (or the sum of absolute values). Add this regularization term to the overall loss function, scaled by a hyperparameter 'decorrelation_coef' (e.g., 0.001, 0.01, 0.1). Compare the training dynamics, convergence speed, and final performance with the baseline model without decorrelation regularization. Experiment with different values for 'decorrelation_coef'. Monitor the correlation matrix of the features during training to quantify the degree of decorrelation achieved. The decorrelation_coef will be added to the Args class.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A church administrator looking to rebrand their organization and create a cohesive visual identity",
+        "Idea number": 7
+    },
+    {
+        "Name": "softfold_effective_rank",
+        "Title": "Effective Rank Analysis of SoftFold Layers: Understanding Representation Shaping in PPO",
+        "Experiment": "Modify the Agent class to store the output of each SoftFold layer during the forward pass. Implement a function to estimate the effective rank of these stored feature representations. This function should take a tensor of shape (batch_size, feature_dim) as input and return an estimate of its effective rank. Compute the Singular Value Decomposition (SVD) of the input tensor. Obtain the singular values from the SVD. Calculate the total variance explained by all singular values. Define a threshold (e.g., 0.95) for the explained variance ratio. Compute the effective rank as the number of singular values required to explain at least the defined threshold of the total variance. During training, after each policy update, compute the effective rank of the output of each SoftFold layer using the collected feature representations from the previous batch. Log these effective rank estimates to TensorBoard. Compare the training dynamics, convergence speed, and final performance with the baseline model. Analyze how the effective rank of the features changes during training and how it relates to the performance of the agent.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A 6-year-old child with a curious mind and a willingness to participate in cognitive development studies",
+        "Idea number": 8
+    },
+    {
+        "Name": "parallel_softfold_combination_learned_nonnegative_weights",
+        "Title": "Parallel Combination of SoftFold Layers with Learned Non-Negative Weights for Enhanced Representation Learning in PPO",
+        "Experiment": "Modify the Agent class to implement a parallel SoftFold architecture. Instead of a single SoftFold layer, the input to each MLP block is fed into 'k' multiple SoftFold layers in parallel. Each SoftFold layer will have the same width as the original single SoftFold layer. Add a small neural network (e.g., a single linear layer followed by a sigmoid activation) that takes the input tensor as input and outputs a weight vector of shape (k,). The forward pass will pass the input through each of the 'k' SoftFold layers. Then, the output of each SoftFold layer is multiplied by the corresponding weight from the weight vector. The weighted outputs are then summed to produce the final output of the parallel SoftFold block. Experiment with different numbers of parallel SoftFold layers ('k'). Compare the training dynamics, convergence speed, final performance, and parameter count with the baseline model using a single SoftFold layer. This will involve modifying the Agent class's __init__ method to instantiate multiple SoftFold layers and the weight prediction network, and modifying the forward pass of the actor and critic networks to pass the input through each SoftFold layer and combine the outputs using the learned weights. The sigmoid activation ensures non-negative weights.",
+        "Interestingness": 10,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A pediatric psychiatrist interested in the intersection of psychology and physical environments",
+        "Idea number": 9
+    },
+    {
+        "Name": "multiple_hyperplane_softfold_individual_sigmoid",
+        "Title": "Multiple Hyperplane SoftFold Layer with Individual Sigmoids and Projection-Based Weights: Enhancing Representation Learning with Fine-Grained Folding Effects in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate multiple hyperplanes. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_hyperplanes, width), where num_hyperplanes is a hyperparameter. The forward pass will compute the folding effect with respect to each hyperplane. For each hyperplane i, calculate the scale factor scale_factor_i = (input_tensor @ N[i]) / (N[i] @ N[i] + eps). Calculate the residual vector residual_vec_i = (1 - scale_factor_i).unsqueeze(1) * N[i]. Calculate the projection weight weight_i = input_tensor @ N[i]. Normalize the weights: weights = weight_i / (torch.sum(torch.abs(weight_i)) + 1e-8). Calculate p_i = self.crease * (input_tensor @ N[i] - N[i] @ N[i]). Clamp p_i between -25.0 and 25.0. Calculate sigmoid_i = torch.sigmoid(p_i). The final output of the SoftFold layer is input_tensor + sum(weights[i] * sigmoid_i.unsqueeze(1) * self.stretch * residual_vec_i) for i in range(num_hyperplanes). Experiment with different values for num_hyperplanes (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single hyperplane. This will involve modifying the SoftFold class's __init__ method to instantiate the matrix 'N', and modifying the forward pass to compute the individual folding effects and combine the residual vectors using the projection-based weights and individual sigmoids.",
+        "Interestingness": 10,
+        "Feasibility": 8,
+        "Novelty": 9,
+        "Persona": "A globetrotting adventurer who showcases eyewear as an essential travel accessory",
+        "Idea number": 10
+    }
+]
