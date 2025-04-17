@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "learnable_sigmoid_parameters",
+        "Title": "Adaptive Sigmoid Function with Learnable Parameters in Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to include learnable parameters for the sigmoid function. Replace the standard sigmoid function with a parameterized sigmoid: `torch.sigmoid(slope * p + bias)`. Introduce `slope` and `bias` as `nn.Parameter` within the SoftFold layer, initialized with reasonable values (e.g., `slope=torch.nn.Parameter(torch.tensor(1.0))` and `bias=torch.nn.Parameter(torch.tensor(0.0))`). In the forward function, use these learnable parameters to compute the sigmoid: `sigmoid = torch.sigmoid(self.slope * p + self.bias)`. Experiment with different initialization strategies for the slope and bias parameters. Compare the training dynamics, convergence speed, and final performance with the baseline model using the standard sigmoid. Monitor the learned values of slope and bias during training to understand how the network adapts the sigmoid function.",
+        "Interestingness": 7,
+        "Feasibility": 7,
+        "Novelty": 6,
+        "Persona": "Sara Baer-Sinnott is a passionate advocate for plant-based eating, a registered dietitian, and the president of Oldways, a nonprofit food and nutrition education organization. She has decades of experience exploring the health benefits of traditional diets and is well-versed in the updated Vegetarian & Vegan Diet Pyramid, which she has helped to create. Sara is an expert in the field of nutrition and health, with a focus on the benefits of a plant-based diet and the importance of well-planned meals. She is dedicated to promoting healthy eating habits and empowering people to make informed decisions about their diets.",
+        "Idea number": 3
+    },
+    {
+        "Name": "learnable_hyperplane_translation",
+        "Title": "Adaptive Hyperplane Translation in Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to include a learnable translation vector. Add a `translation` parameter (nn.Parameter) to the SoftFold class, initialized with zeros of the appropriate dimension (same as width). In the forward function, compute the translated input: `x_translated = input_tensor - self.translation`. Then, compute `x_dot_n = x_translated @ self.n`. Compute the distance to the hyperplane as `p = self.crease * x_dot_n`. The residual vector should be computed based on the original input `input_tensor`, not the translated one. The rest of the forward pass should remain the same. Experiment with different initialization strategies for the translation vector (e.g., small random values). Compare the training dynamics, convergence speed, and final performance with the baseline model without translation.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "An educator who specializes in the education and nurturing of gifted and talented students in America's Pre-K to 12th grade classrooms. The educator is knowledgeable about the different abilities and interests of these students and has experience in identifying and supporting these students through various educational programs and initiatives. The educator is also aware of the challenges and barriers faced by gifted and talented students, including the lack of funding and support for gifted education programs. The educator is dedicated to ensuring that these students have the opportunity to reach their full potential and is committed to promoting their well-being and success.",
+        "Idea number": 4
+    },
+    {
+        "Name": "learnable_givens_rotations",
+        "Title": "Adaptive Input Rotation via Givens Rotations in Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to include a learnable rotation implemented using a sequence of Givens rotations. For an input of dimension 'width', there are width*(width-1)/2 possible Givens rotations. Introduce a set of learnable angles (nn.ParameterList) of size width*(width-1)/2. Each angle corresponds to a specific Givens rotation. Implement a function that constructs a rotation matrix from these angles by sequentially applying the Givens rotations. In the forward function, rotate the input: `x_rotated = input_tensor @ rotation_matrix`. Then, compute `x_dot_n = x_rotated @ self.n`. The residual vector should be computed based on the rotated input `x_rotated`. The rest of the forward pass should remain the same. Compare the training dynamics, convergence speed, and final performance with the baseline model without rotation.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A Speech-Language Pathologist who specializes in working with children with Autism Spectrum Disorder. She has experience in designing and implementing interventions that help children with ASD and their siblings understand each other better. She is knowledgeable about the complex issues that siblings of children with ASD face and is passionate about helping children with ASD and their siblings navigate these challenges.",
+        "Idea number": 5
+    },
+    {
+        "Name": "softfold_fusion_network",
+        "Title": "Soft Fold Fusion Network: A Learnable Combination of Multiple Soft Fold Layers for Enhanced PPO Performance",
+        "Experiment": "Modify the Agent class to include multiple SoftFold layers (N) in both the actor and critic networks. The output of each SoftFold layer will be fed into a small fusion network (e.g., an MLP with one hidden layer). The fusion network will take the outputs of the N SoftFold layers as input and produce a single output vector of the same dimension as the individual SoftFold outputs. The fusion network's output will then be used as the input to the subsequent layer in the actor/critic network. Experiment with different values for N (e.g., 2, 3, 4) and different architectures for the fusion network (e.g., different number of hidden units, different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer. Consider initializing the weights of the fusion network such that it initially performs an average of the inputs.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "Norman Bentwich, a British barrister and legal academic who served as the first Attorney General of Mandatory Palestine from 1918 to 1931.",
+        "Idea number": 6
+    },
+    {
+        "Name": "state_conditioned_softfold",
+        "Title": "State-Conditioned Soft Fold Layers: Adapting Folding Behavior to Environmental Context in PPO",
+        "Experiment": "Modify the SoftFold layer to condition its parameters (n, crease, stretch) on the input state. Replace the fixed parameters n, crease, and stretch with small neural networks that take the input tensor as input and output the corresponding parameter values. Implement a shared MLP with one hidden layer that takes the input tensor as input. Add separate output layers to this shared MLP for predicting the parameters n, crease, and stretch. The output layer for 'n' should output a vector of the same dimension as 'n', which is then normalized to obtain 'n'. The output layers for 'crease' and 'stretch' should output scalar values. In the forward function, use the shared MLP and the separate output layers to predict the parameter values based on the input tensor: `shared_output = shared_mlp(input_tensor)`, `n_unnormalized = n_output_layer(shared_output)`, `n = n_unnormalized / n_unnormalized.norm()`, `crease = crease_output_layer(shared_output)`, `stretch = stretch_output_layer(shared_output)`. The forward pass will then use these dynamically predicted parameters to compute the folding effect. Compare the training dynamics, convergence speed, and final performance with the baseline model using fixed parameters. To ensure stability, consider adding regularization terms to the loss function to penalize large changes in the predicted parameters.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A seasoned investor who is actively engaged in the gilt-edged market, primarily focusing on the issuance, trading, and analysis of government securities. This individual is knowledgeable about the intricacies of the market, including the various forms of securities, the participants, and the purposes for which securities are issued. The investor is well-versed in the methods of transactions, including direct sales and bank receipts, and is skilled in identifying opportunities for profit. They are also familiar with the different types of government bonds, including zero coupon bonds and floating rate bonds, and can analyze their performance and potential risks. This individual is likely to have a deep understanding of the market dynamics and can make informed decisions based on their extensive knowledge and experience.",
+        "Idea number": 7
+    },
+    {
+        "Name": "distributional_softfold",
+        "Title": "Distributional Soft Fold Layers: Learning a Distribution over Hyperplanes with Diagonal Covariance for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to learn a distribution over normal vectors instead of a single normal vector. Replace the fixed normal vector 'n' with learnable parameters for a Gaussian distribution (mean 'mu' and log variance 'logvar') with a diagonal covariance matrix. In the forward function, sample K normal vectors from the learned Gaussian distribution using the reparameterization trick. Compute the soft fold operation for each sampled normal vector, resulting in K folded outputs. Average the K folded outputs. Experiment with different values for K (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A savvy Excel user who is highly skilled in hiding and protecting data within Excel workbooks. They are familiar with the Visual Basic Editor and have a keen eye for detail. They are interested in learning more about Excel security and have a strong desire to protect their data from unauthorized access. They are also knowledgeable about the latest security trends and are always looking for ways to enhance their security measures.",
+        "Idea number": 8
+    },
+    {
+        "Name": "softfold_intrinsic_curiosity_integrated_encoder",
+        "Title": "Soft Fold Intrinsic Curiosity with Integrated Encoder: Leveraging Soft Fold Layers and Integrated Encoders for Enhanced Exploration in PPO",
+        "Experiment": "Implement an intrinsic curiosity module that uses a SoftFold layer and an integrated encoder to generate an intrinsic reward signal. Integrate the encoding part of an autoencoder directly into the curiosity module and train it jointly with the SoftFold layer and the prediction network. Add a 'curiosity_module' to the Agent class, consisting of an encoder network (e.g., a linear layer), a SoftFold layer, and a linear layer (`nn.Linear`) to predict the encoded feature vector of the next state. The input to the curiosity module is the current state. The encoder transforms the state into a feature vector. The SoftFold layer transforms the feature vector, and the prediction network tries to predict the encoded feature vector of the next state. The intrinsic reward is proportional to the prediction error (e.g., the mean squared error between the predicted encoded feature vector and the actual encoded feature vector of the next state). Add the intrinsic reward to the environment's reward to encourage exploration. Experiment with different scaling factors for the intrinsic reward and different architectures for the encoder and the prediction network. Specifically:\n\n1.  **Modify Agent Class:** Add a `curiosity_module` consisting of an encoder network (e.g., a linear layer), a `SoftFold` layer, and a linear layer (`nn.Linear`) to predict the encoded feature vector of the next state. The input to the curiosity module is the current state.\n2.  **Implement Curiosity Reward:** In the main training loop, after the environment step, encode the current state and the next state using the encoder. Calculate the intrinsic reward as the MSE between the predicted encoded feature vector and the actual encoded feature vector of the next state. Scale this reward by a hyperparameter (e.g., 0.01). Add this intrinsic reward to the environment's reward.\n3.  **Train Jointly:** Train the encoder, SoftFold layer, and prediction network jointly to minimize the prediction error.\n4.  **Track Metrics:** Track the mean intrinsic reward, the prediction error, and the episodic return.\n5.  **Hyperparameter Tuning:** Tune the scaling factor for the intrinsic reward, the architecture of the encoder, and the architecture of the prediction network.\nCompare the training dynamics, convergence speed, and final performance with the baseline model without intrinsic curiosity and the previous implementations.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A physiotherapist who specializes in treating patients with cervicogenic headaches, particularly those associated with the neck and upper back. The physiotherapist has a thorough understanding of the anatomy and biomechanics of the neck and upper back, and is skilled in using various treatment methods to alleviate pain and improve movement and function. They are also knowledgeable about the management of other types of headaches and can provide guidance on the best course of treatment for each individual patient.",
+        "Idea number": 9
+    },
+    {
+        "Name": "gated_softfold",
+        "Title": "Gated Soft Fold Layers: Input-Conditional Modulation of Folding Effect for Enhanced PPO Performance",
+        "Experiment": "Modify the SoftFold layer to include a learnable gate that modulates the effect of the folding operation. Instead of adding a separate neural network, use the `x_dot_n` value, already computed in the original SoftFold layer, as input to a sigmoid function with learnable slope and bias: `gate = torch.sigmoid(self.slope * x_dot_n + self.bias)`. Introduce `slope` and `bias` as `nn.Parameter` within the SoftFold layer, initialized with reasonable values (e.g., `slope=torch.nn.Parameter(torch.tensor(1.0))` and `bias=torch.nn.Parameter(torch.tensor(0.0))`). In the forward function, compute the folded output as before. Then, compute the gated output as `output = gate * folded_output + (1 - gate) * input_tensor`, where `gate` is the output of the sigmoid function and `folded_output` is the output of the original SoftFold layer. Compare the training dynamics, convergence speed, and final performance with the baseline model without the gating mechanism. Monitor the mean gate value during training to understand how often the network applies the folding operation. Specifically:\n\n1.  **Modify SoftFold Class:** Add `slope` and `bias` parameters (nn.Parameter) to the SoftFold class, initialized with reasonable values.\n2.  **Implement Gated Output:** In the forward function, compute the gate value using `gate = torch.sigmoid(self.slope * x_dot_n + self.bias)`. Then, compute the gated output as `output = gate * folded_output + (1 - gate) * input_tensor`, where `folded_output` is the output of the original SoftFold layer.\n3.  **Track Metrics:** Track the mean gate value during training to understand how often the network applies the folding operation. Monitor the learned values of slope and bias during training to understand how the network adapts the sigmoid function.\nCompare the training dynamics, convergence speed, and final performance with the baseline model without the gating mechanism.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A supply chain manager who is interested in globalizing their business and taking advantage of low-cost manufacturing and procurement opportunities in developing countries closer to home. They are also interested in reducing transportation costs and lead times, as well as offsetting rising international transportation costs by sourcing products and materials closer to the end-market. They are familiar with the nearshoring trend and how it can benefit American companies and the rest of the world. They are also aware of the impact of globalisation on their supply chain and are looking for ways to stay informed about international affairs to stay ahead in their industry.",
+        "Idea number": 10
+    }
+]

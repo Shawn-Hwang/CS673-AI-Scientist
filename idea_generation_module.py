@@ -97,6 +97,11 @@ def parse_arguments():
         action="store_true",
         help="Use personas for idea generation.",
     )
+    parser.add_argument(
+        "--system_personas",
+        action="store_true",
+        help="Use personas in the system prompt for idea generation.",
+    )
     return parser.parse_args()
 
 
@@ -133,6 +138,7 @@ if __name__ == "__main__":
         max_num_generations=args.num_ideas,
         num_reflections=NUM_REFLECTIONS,
         personas=args.personas,
+        system_personas=args.system_personas,
     )
     if not args.skip_novelty_check:
         ideas = check_idea_novelty(
