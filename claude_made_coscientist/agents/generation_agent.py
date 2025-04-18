@@ -36,9 +36,11 @@ class GenerationAgent(BaseAgent):
         
         # Call LLM
         response = self.call_llm(prompt, temperature=temperature)
+        print(f"Response: {response}")
         
         # Process response
         ideas = self.process_response(response)
+        
         
         return ideas
     
