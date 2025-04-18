@@ -1,0 +1,100 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "residual_softfold_layers",
+        "Title": "Residual SoftFold Layers: Enhancing Information Flow and Learning in PPO",
+        "Experiment": "Modify the SoftFold layer to include a residual connection. After the SoftFold layer's forward pass, add a weighted sum of the original input and the folded output: output = alpha * input + (1 - alpha) * folded_output, where alpha is a learnable parameter initialized near 0.5. This allows the network to dynamically adjust the contribution of the folding operation. Implement this modification within the Agent class, replacing the existing SoftFold layers with the new residual version. Compare the training dynamics, convergence speed, and final performance with the baseline model. Experiment with different initialization values for alpha (e.g., 0.2, 0.5, 0.8).",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 6,
+        "Persona": "A sales representative from a tire manufacturing company specialized in off-road tires for ATVs",
+        "Idea number": 3
+    },
+    {
+        "Name": "parallel_softfold_layers",
+        "Title": "Parallel SoftFold Layers: Enhancing Representation Learning in PPO with Multiple Hyperplanes",
+        "Experiment": "Implement a ParallelSoftFold layer that consists of N SoftFold layers operating in parallel. Each SoftFold layer has its own learnable normal vector 'n' and crease parameter. The input tensor is passed through each SoftFold layer independently. The outputs of the N SoftFold layers are then combined by a weighted average. Each SoftFold layer's output is multiplied by a learnable weight before averaging. The learnable weights are initialized to 1/N. The number of parallel SoftFold layers, N, is a hyperparameter. Modify the Agent class to replace the existing SoftFold layers with the new ParallelSoftFold layer. Experiment with different values for N (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A history enthusiast who collects and preserves rare stained-glass windows from decommissioned churches",
+        "Idea number": 4
+    },
+    {
+        "Name": "weighted_softfold_ensemble",
+        "Title": "Weighted SoftFold Ensemble: Enhancing Non-Linearity and Adaptability in PPO with Learnable Combination Weights",
+        "Experiment": "Implement a WeightedSoftFoldEnsemble layer that consists of N SoftFold layers operating in parallel. Each SoftFold layer has its own learnable normal vector 'n' and crease parameter. The input tensor is passed through each SoftFold layer independently. Each SoftFold layer's output is multiplied by a learnable weight. These weights are initialized to 1/N and are constrained to be non-negative using a ReLU activation. The weighted outputs of the N SoftFold layers are then summed. The final output is a learnable weighted sum of the original input and the sum of the weighted SoftFold outputs: output = alpha * input + (1 - alpha) * sum(weight_i * softfold_output_i), where alpha is a learnable parameter initialized near 0.5. The number of SoftFold layers, N, is a hyperparameter. Modify the Agent class to replace the existing SoftFold layers with the new WeightedSoftFoldEnsemble layer. Experiment with different values for N (e.g., 2, 4, 8). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A restaurant owner who often discusses the parallels between project management and running a business",
+        "Idea number": 5
+    },
+    {
+        "Name": "sequential_softfold_layers",
+        "Title": "Sequential SoftFold Layers: Enhancing Non-Linearity in PPO through Iterative Folding",
+        "Experiment": "Implement a SequentialSoftFold layer that consists of N SoftFold layers operating sequentially. Each SoftFold layer has its own learnable normal vector 'n' and crease parameter. The input tensor is passed through the first SoftFold layer. The output of the first SoftFold layer is then passed as input to the second SoftFold layer, and so on, until it passes through all N SoftFold layers. Each SoftFold layer has its own independent parameters (i.e., the SoftFold layers are not shared). The final output of the SequentialSoftFold layer is the output of the Nth SoftFold layer. The number of sequential SoftFold layers, N, is a hyperparameter. Modify the Agent class to replace the existing SoftFold layers with the new SequentialSoftFold layer. Experiment with different values for N (e.g., 2, 3, 4). Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 7,
+        "Feasibility": 8,
+        "Novelty": 6,
+        "Persona": "A cryptocurrency exchange platform looking to enhance their fraud detection and transaction monitoring systems",
+        "Idea number": 6
+    },
+    {
+        "Name": "distance_weighted_softfold",
+        "Title": "Distance-Weighted SoftFold Layer: Enhancing Locality and Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to incorporate a distance-based weighting. In the forward pass, calculate a distance proxy as the absolute value of (x_dot_n - n_dot_n). Use a Gaussian function of this distance proxy to scale the residual vector before adding it to the input tensor. The Gaussian function will be exp(-distance_proxy^2 / (2 * sigma^2)), where sigma is a learnable parameter initialized to 1.0. Implement sigma as a torch.nn.Parameter. Compare the training dynamics, convergence speed, and final performance with the baseline model. Specifically, the residual_vec in the forward function will be multiplied by torch.exp(-distance_proxy**2 / (2 * sigma**2)), where distance_proxy is torch.abs(x_dot_n - n_dot_n).",
+        "Interestingness": 8,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A special education teacher who collaborates with the math teacher to develop individualized learning plans",
+        "Idea number": 7
+    },
+    {
+        "Name": "input_dependent_crease_v2",
+        "Title": "Input-Dependent Crease Parameter with LayerNorm in Soft Fold Layers: Enhancing Adaptability and Training Stability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn an input-dependent crease parameter. Instead of a fixed crease, use a small neural network (e.g., a single linear layer) that takes the input tensor as input, applies LayerNorm, and outputs a scaling factor for the original crease parameter. The output of this network is passed through a sigmoid activation, and then multiplied by the original crease parameter. The forward pass will then use this dynamically predicted and scaled 'crease' value to compute the folding effect. Experiment with different architectures for the crease prediction network and different activation functions. Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'crease'.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A mechanical engineer who has worked on groundbreaking projects and can provide insider insights",
+        "Idea number": 8
+    },
+    {
+        "Name": "split_softfold_learnable_combination_layernorm",
+        "Title": "Split SoftFold Layers with Learnable Combination and LayerNorm: Enhancing Feature Integration and Training Stability in PPO",
+        "Experiment": "Implement a SplitSoftFold layer. This layer will take an input tensor and split it into N sub-tensors along the feature dimension. Each sub-tensor will be passed through a separate SoftFold layer with its own learnable normal vector 'n' and crease parameter. The outputs of the N SoftFold layers will then be concatenated back together. A LayerNorm layer will be added after the concatenation, followed by a linear layer to map the normalized concatenated outputs back to the original input dimension. The number of splits, N, and the width of each split are hyperparameters. Modify the Agent class to replace the existing SoftFold layers with the new SplitSoftFold layer. Experiment with different values for N (e.g., 2, 4) and different split widths. Add assertions to ensure that the input width is divisible by N. Compare the training dynamics, convergence speed, and final performance with the baseline model using a single SoftFold layer.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "An enthusiastic record collector and music historian who lives in the United States.",
+        "Idea number": 9
+    },
+    {
+        "Name": "frequency_domain_softfold_v2",
+        "Title": "Frequency Domain Filtering with Learnable Mask for SoftFold Layers: Enhancing Adaptive Feature Selectivity in PPO",
+        "Experiment": "Modify the Agent class to incorporate frequency domain filtering with a learnable mask. Implement a Discrete Cosine Transform (DCT) and its inverse (IDCT) using torch.fft.dct and torch.fft.idct. Apply the DCT to the output of the *first* linear layer in both the actor and critic networks (i.e., after the initial 64-dimensional feature transformation). Create a learnable mask of the same size as the DCT output. This mask will be element-wise multiplied with the DCT output. The mask should be passed through a sigmoid activation to constrain its values between 0 and 1. Initialize the mask values to be close to 1 (e.g., 0.9) to encourage the network to initially use all frequency components. After applying the mask, apply IDCT to reconstruct the filtered features. Pass these filtered features to the SoftFold layer. Compare the training dynamics, convergence speed, and final performance with the baseline model without frequency domain filtering. Also, log the mean value of the mask during training to observe how the network is learning to filter frequencies.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Persona": "A high school student who runs a successful blog focused on senior year tips",
+        "Idea number": 10
+    }
+]

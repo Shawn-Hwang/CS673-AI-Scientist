@@ -4,6 +4,8 @@ import os.path as osp
 import time
 from typing import List, Dict, Union
 import polars as pl
+import numpy as np
+import pandas as pd
 
 import backoff
 import requests
@@ -84,7 +86,8 @@ def generate_ideas(
         skip_generation=False,
         max_num_generations=20,
         num_reflections=5,
-        personas=False
+        personas=False,
+        system_personas=False,
 ):
     if skip_generation:
         # Load existing ideas from file
@@ -115,8 +118,14 @@ def generate_ideas(
     idea_system_prompt = prompt["system"]
 
     # read in the huggingface persona data 
-    df = pl.read_ndjson('hf://datasets/proj-persona/PersonaHub/persona.jsonl')
-    df = df.sample(n=max_num_generations).to_pandas()
+    if personas or system_personas :
+        file_num = np.random.randint(1, 20)
+        df = pl.read_ndjson(f'hf://datasets/proj-persona/PersonaHub/ElitePersonas/elite_personas.part{file_num}.jsonl') # elite personas
+        # df = pl.read_ndjson(f'hf://datasets/proj-persona/PersonaHub/persona.jsonl') # regular personas 
+        df = df.sample(n=max_num_generations).to_pandas()
+
+    # df = pd.read_csv('ml_personas.csv')
+    # df = df.sample(n=max_num_generations).reset_index(drop=True)
 
     for _ in range(max_num_generations):
         print()
@@ -128,6 +137,11 @@ def generate_ideas(
                 persona_description = f"Perform the task with the following persona: {persona}"
             else :
                 persona_description = ""
+            if system_personas:
+                idea_system_prompt = f"You are {df.loc[_, 'persona']}"
+                # persona_usage_encouragement = "Use your unique background and experience for inspiration and creativity in completing the task."
+            # else : 
+                # persona_usage_encouragement = ""
             msg_history = []
             print(f"Iteration 1/{num_reflections}")
             text, msg_history = get_response_from_llm(
@@ -137,6 +151,7 @@ def generate_ideas(
                     prev_ideas_string=prev_ideas_string,
                     num_reflections=num_reflections,
                     persona_description=persona_description,
+                    # persona_usage_encouragement=persona_usage_encouragement,
                 ),
                 client=client,
                 model=model,
@@ -169,6 +184,8 @@ def generate_ideas(
                     ), "Failed to extract JSON from LLM output"
                     if personas:
                         json_output["Persona"] = persona
+                    if system_personas:
+                        json_output["Persona"] = df.loc[_, "persona"]
                     print(json_output)
 
                     if "I am done" in text:
