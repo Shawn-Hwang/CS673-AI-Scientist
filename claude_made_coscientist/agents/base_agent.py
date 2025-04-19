@@ -3,7 +3,7 @@ from utils import call_llm, extract_json_from_text
 class BaseAgent:
     """Base class for all co-scientist agents"""
     
-    def __init__(self, use_genai=True, model="gemini-2.0-flash"):
+    def __init__(self, use_genai=True, model="gemini-2.0-flash", persona=None):
         self.context = {}
         self.use_genai = use_genai
         self.model = model
@@ -17,10 +17,10 @@ class BaseAgent:
         """Process the response from the LLM"""
         raise NotImplementedError("Subclasses must implement this method")
     
-    def call_llm(self, prompt):
+    def call_llm(self, prompt, temperature=1.0):
         """Call the LLM with the given prompt"""
         print(f"Calling LLM for {self.__class__.__name__} with prompt of length {len(prompt)}")
-        return call_llm(prompt, model=self.model, use_genai=self.use_genai, system_prompt=self.system_prompt)
+        return call_llm(prompt, model=self.model, temperature=temperature, use_genai=self.use_genai, system_prompt=self.system_prompt)
     
     def extract_json(self, text):
         """Extract JSON from text response"""

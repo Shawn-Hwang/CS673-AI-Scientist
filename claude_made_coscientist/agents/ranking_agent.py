@@ -36,7 +36,7 @@ class RankingAgent(BaseAgent):
             # idea1, idea2 = ranked_ideas[idx1], ranked_ideas[idx2]
 
             # prioritize new ideas and high ranking ideas for matches
-            match_probs = np.array([idea["ELO rating"]+1800*int(idea["Evolved"]) for idea in ranked_ideas])
+            match_probs = np.array([idea["ELO rating"] for idea in ranked_ideas])
             idea1_idx = np.random.choice(np.arange(len(ranked_ideas)), p=match_probs/np.sum(match_probs))
             idea1 = ranked_ideas[idea1_idx]
 

@@ -11,6 +11,7 @@ from agents.ranking_agent import RankingAgent
 from agents.evolution_agent import EvolutionAgent
 from agents.meta_review_agent import MetaReviewAgent
 from agents.proximity_agent import ProximityAgent
+from agents.debate_agent import DebateAgent
 from utils import setup_genai_api
 
 def parse_arguments():
@@ -28,9 +29,20 @@ def parse_arguments():
         help="Number of top ideas to save"
     )
     parser.add_argument(
+        "--temperature",
+        type=float,
+        default=1.0,
+        help="Temperature for idea generation and debate"
+    )
+    parser.add_argument(
         "--skip_lit_review",
         action="store_true",
         help="Skip literature review step"
+    )
+    parser.add_argument(
+        "--use_personas",
+        action="store_true",
+        help="Use personas for idea generation"
     )
     parser.add_argument(
         "--research_goal",
@@ -49,14 +61,14 @@ def parse_arguments():
         default="gemini-2.0-flash",
         choices=[
             "gemini-1.5-flash", "gemini-1.5-pro", 
-            "gemini-2.0-flash", "gemini-2.0-pro"
+            "gemini-2.0-flash", "gemini-2.5-pro"
         ],
         help="Google Generative AI model to use if use_genai is True"
     )
     parser.add_argument(
         "--tournament_matches",
         type=int,
-        default=12,
+        default=14,
         help="Number of tournament matches to run"
     )
     parser.add_argument(
@@ -69,7 +81,7 @@ def parse_arguments():
 
 def load_experiment_file(experiment_name):
     """Load the experiment.py file content"""
-    experiment_path = osp.join("templates", experiment_name, "experiment.py")
+    experiment_path = osp.join("../templates", experiment_name, "experiment.py")
     if not osp.exists(experiment_path):
         raise FileNotFoundError(f"Experiment file not found at {experiment_path}")
     
@@ -80,7 +92,7 @@ def load_experiment_file(experiment_name):
 
 def save_ideas(ideas, experiment_name, idea_file, proximity_matrix=None):
     """Save generated ideas to a JSON file"""
-    output_path = osp.join("templates", experiment_name, idea_file)
+    output_path = osp.join("../templates", experiment_name, idea_file)
     os.makedirs(osp.dirname(output_path), exist_ok=True)
     
     with open(output_path, "w") as f:
@@ -96,7 +108,16 @@ def save_ideas(ideas, experiment_name, idea_file, proximity_matrix=None):
 
 def main():
     args = parse_arguments()
-    
+
+    use_personas = args.use_personas
+    if use_personas:
+        print("Using personas for idea generation")
+    else:
+        print("Not using personas for idea generation")
+
+    temperature = args.temperature
+    print(f"Temperature set to {temperature}")
+
     # Setup Gemini API if needed
     if args.use_genai:
         setup_genai_api()
@@ -108,26 +129,52 @@ def main():
     # Step 1: Generate initial ideas
     print("\n=== Step 1: Generating Initial Ideas ===")
     generation_agent = GenerationAgent(use_genai=args.use_genai, model=args.model)
-    initial_ideas = generation_agent.generate_ideas(
-        experiment_content=experiment_content,
-        research_goal=args.research_goal,
-        skip_lit_review=args.skip_lit_review,
-        num_ideas=args.num_ideas
-    )
+    if use_personas:
+        initial_ideas = generation_agent.generate_ideas_with_personas(
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            skip_lit_review=args.skip_lit_review,
+            num_ideas=args.num_ideas,
+            temperature=temperature
+        )
+    else:
+        initial_ideas = generation_agent.generate_ideas(
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            skip_lit_review=args.skip_lit_review,
+            num_ideas=args.num_ideas,
+            temperature=temperature
+        )
     print(f"Generated {len(initial_ideas)} initial ideas")
+
+    # Step 2: Debate ideas
+    if use_personas:
+        print("\n=== Step 2: Debating Ideas ===")
+        debate_agent = DebateAgent(use_genai=args.use_genai, model=args.model)
+        debated_ideas = debate_agent.debate_ideas(
+            ideas=initial_ideas,
+            experiment_content=experiment_content,
+            research_goal=args.research_goal,
+            temperature=temperature
+        )
+        print(f"Debated {len(debated_ideas)} ideas")
+        # save_ideas(debated_ideas, args.experiment, 'debate_notes.json')
+    else:
+        debated_ideas = initial_ideas
+        print("Skipping debate step as personas are not used")
     
     # Step 2: Review ideas
-    print("\n=== Step 2: Reviewing Ideas ===")
+    print("\n=== Step 3: Reviewing Ideas ===")
     reflection_agent = ReflectionAgent(use_genai=args.use_genai, model=args.model)
     reviewed_ideas = reflection_agent.review_ideas(
-        ideas=initial_ideas,
+        ideas=debated_ideas,
         experiment_content=experiment_content,
         research_goal=args.research_goal
     )
     print(f"{len(reviewed_ideas)} ideas passed review")
     
     # Step 3: Calculate proximity between ideas
-    print("\n=== Step 3: Calculating Idea Proximity ===")
+    print("\n=== Step 4: Calculating Idea Proximity ===")
     proximity_agent = ProximityAgent(use_genai=args.use_genai, model=args.model)
     proximity_matrix = proximity_agent.calculate_proximity(
         ideas=reviewed_ideas,
@@ -137,48 +184,48 @@ def main():
     print(f"Calculated proximity for {len(reviewed_ideas)} ideas")
     
     # Step 4: Rank ideas
-    print("\n=== Step 4: Ranking Ideas ===")
+    print("\n=== Step 5: Ranking Ideas ===")
     ranking_agent = RankingAgent(use_genai=args.use_genai, model=args.model)
-    ranked_ideas = ranking_agent.rank_ideas(
+    final_ranked_ideas = ranking_agent.rank_ideas(
         ideas=reviewed_ideas,
         proximity_matrix=proximity_matrix,
         experiment_content=experiment_content,
         research_goal=args.research_goal,
         num_matches=args.tournament_matches
     )
-    print(f"Ranked {len(ranked_ideas)} ideas")
+    print(f"Ranked {len(final_ranked_ideas)} ideas")
     
-    # Step 5: Evolve top ideas
-    print("\n=== Step 5: Evolving Top Ideas ===")
-    evolution_agent = EvolutionAgent(use_genai=args.use_genai, model=args.model)
-    evolved_ideas = evolution_agent.evolve_ideas(
-        ideas=ranked_ideas,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal
-    )
-    print(f"Evolved {len(evolved_ideas)} ideas")
+    # # Step 5: Evolve top ideas
+    # print("\n=== Step 6: Evolving Top Ideas ===")
+    # evolution_agent = EvolutionAgent(use_genai=args.use_genai, model=args.model)
+    # evolved_ideas = evolution_agent.evolve_ideas(
+    #     ideas=ranked_ideas,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal
+    # )
+    # print(f"Evolved {len(evolved_ideas)} ideas")
     
-    # Step 6: Recalculate proximity including evolved ideas
-    print("\n=== Step 6: Recalculating Proximity with Evolved Ideas ===")
-    all_ideas = ranked_ideas + evolved_ideas
-    updated_proximity_matrix = proximity_agent.calculate_proximity(
-        ideas=all_ideas,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal
-    )
+    # # Step 6: Recalculate proximity including evolved ideas
+    # print("\n=== Step 7: Recalculating Proximity with Evolved Ideas ===")
+    # all_ideas = ranked_ideas
+    # updated_proximity_matrix = proximity_agent.calculate_proximity(
+    #     ideas=all_ideas,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal
+    # )
     
-    # Step 7: Final ranking
-    print("\n=== Step 7: Final Ranking ===")
-    final_ranked_ideas = ranking_agent.rank_ideas(
-        ideas=all_ideas,
-        proximity_matrix=updated_proximity_matrix,
-        experiment_content=experiment_content,
-        research_goal=args.research_goal,
-        num_matches=args.tournament_matches
-    )
+    # # Step 7: Final ranking
+    # print("\n=== Step 8: Final Ranking ===")
+    # final_ranked_ideas = ranking_agent.rank_ideas(
+    #     ideas=all_ideas,
+    #     proximity_matrix=updated_proximity_matrix,
+    #     experiment_content=experiment_content,
+    #     research_goal=args.research_goal,
+    #     num_matches=args.tournament_matches
+    # )
     
     # Step 8: Meta-review for final feedback
-    print("\n=== Step 8: Meta-Review ===")
+    print("\n=== Step 9: Meta-Review ===")
     meta_review_agent = MetaReviewAgent(use_genai=args.use_genai, model=args.model)
     finalized_ideas = meta_review_agent.finalize_ideas(
         ideas=final_ranked_ideas, # [:min(args.num_ideas, len(final_ranked_ideas))]
@@ -187,7 +234,7 @@ def main():
     )
     
     # Save the top ideas
-    save_ideas(finalized_ideas, args.experiment, args.idea_file, updated_proximity_matrix)
+    save_ideas(finalized_ideas, args.experiment, args.idea_file, proximity_matrix)
     
     # Print top ideas summary
     print("\n=== Top Ideas Generated ===")
@@ -199,4 +246,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# Example usage: python main.py --experiment experiment_name --num_ideas 5 --use_genai --model gemini-2.0-flash
+# Example usage: python main.py --experiment experiment_name --num_ideas 3 --use_genai --model gemini-2.0-flash
