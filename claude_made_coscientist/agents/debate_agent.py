@@ -85,7 +85,7 @@ class DebateAgent(BaseAgent):
         Here is the experiment code context (truncated for brevity):
         
         ```python
-        {experiment_content[:1000]}...
+        {experiment_content}...
         ```
         
         Here is the idea to debate:
@@ -109,6 +109,7 @@ class DebateAgent(BaseAgent):
         prompt += f"""
         
         3. Finally, synthesize the perspectives from the debate and create an improved version of the idea that addresses the critiques while maintaining its core strengths.
+        While you are improving the idea, please ensure that the idea is feasible to investigate given the provided python code.
         
         Format your response as follows:
         
