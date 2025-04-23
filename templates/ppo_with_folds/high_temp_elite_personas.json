@@ -1,0 +1,90 @@
+[
+    {
+        "Name": "fold_specific_learning_rates",
+        "Title": "Fold Layer-specific Learning Rates: Optimizing Training Dynamics in PPO with Soft Fold Layers",
+        "Experiment": "Implement fold layer-specific learning rates, where the fold layers have a different learning rate than the linear layers. Compare the training dynamics, convergence speed, and final performance with the baseline model.",
+        "Interestingness": 5,
+        "Feasibility": 5,
+        "Novelty": 3,
+        "Idea number": 1
+    },
+    {
+        "Name": "input_dependent_hyperplane_combination",
+        "Title": "Input-Dependent Hyperplane Combination in Soft Fold Layers: Enhancing Adaptability in PPO",
+        "Experiment": "Modify the SoftFold layer to learn a set of basis normal vectors and combine them based on input-dependent weights. Replace the single normal vector 'n' with a learnable matrix 'N' of shape (num_basis, width), where num_basis is a hyperparameter. Add a small neural network (e.g., a single linear layer followed by a softmax activation) that takes the input tensor as input and outputs a weight vector of shape (num_basis,). The forward pass will compute the weighted sum of the basis normal vectors using these weights: n = sum(weights[i] * N[i]) for i in range(num_basis). Normalize the resulting vector 'n' to ensure it has unit length. The forward pass will then use this dynamically combined 'n' to compute the folding effect. Experiment with different values for num_basis (e.g., 2, 4, 8) and different architectures for the weight prediction network (e.g., adding a hidden layer, using different activation functions). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed 'n'.",
+        "Interestingness": 9,
+        "Feasibility": 7,
+        "Novelty": 8,
+        "Idea number": 2
+    },
+    {
+        "Name": "input_dependent_crease",
+        "Title": "Adaptive Soft Fold Layers with Input-Dependent Crease Parameters for Enhanced PPO Training",
+        "Experiment": "Modify the SoftFold layer to learn an input-dependent crease parameter. Instead of having a single crease parameter, introduce a small neural network (e.g., a linear layer with ReLU activation) that takes the input tensor as input and outputs a crease factor for each data point in the batch. This factor will then scale the sigmoid component in the forward pass. Keep the stretch parameter fixed. Initialize this network to output values close to the original crease value (e.g., initialize the bias of the output layer to be the original value). Compare the training dynamics, convergence speed, and final performance with the baseline model using a fixed crease parameter.",
+        "Interestingness": 8,
+        "Feasibility": 7,
+        "Novelty": 7,
+        "Persona": "A conservationist or administrator who is interested in the conservation of wetlands and their biodiversity in India, and is looking for potential sites to designate as Ramsar sites. They are familiar with the Ramsar Convention and its criteria for identifying wetlands of international importance. They are also interested in the biogeographic regions of India and have knowledge of the rich aquatic ecosystem types in the country. They are looking for sites that qualify the Ramsar criteria and are important for biodiversity conservation, including Important Bird Areas (IBAs) and protected areas (Sanctuaries, National Parks, Conservation Reserve). They are looking for sites that cover all the biogeographic areas in India, except Andaman and Nicobar, and are trying to cover the whole country and all the biogeographic regions and their provinces.",
+        "Idea number": 3
+    },
+    {
+        "Name": "env_normal_vector_diversity",
+        "Title": "Encouraging Environment-Specific Diversity in Normal Vectors of Soft Fold Layers for Enhanced Exploration in PPO",
+        "Experiment": "Implement a diversity loss term that penalizes the cosine similarity between the normal vectors 'n' of different SoftFold layers within the same environment. The loss should be added to the PPO loss.\n\nSpecifically:\n1. Modify the Agent class to keep track of all SoftFold layers.\n2. Before the update_epochs loop, collect the normal vectors 'n' from all SoftFold layers for each environment within the current batch (args.num_envs x args.num_steps).\n3. For each environment, compute the average cosine similarity between all pairs of normal vectors within that environment.\n4. Define a diversity loss as the average of the negative of this cosine similarity across each environment added to a measure of self-similiarity of normal vectors from within an environment. The similiarity will be (n @ n - 1)**2 of each environment's normal vectors, averaged and scaled across num_envs, which encourages n to have values with self.\n5. Add this diversity loss to the total loss before backpropagation.\n6. Log the diversity loss using the SummaryWriter.\n7. Experiment to find if a coefficient should be needed. The base code will also be copied, to ensure there is something to compare against in the experiments.",
+        "Interestingness": 9,
+        "Feasibility": 6,
+        "Novelty": 8,
+        "Persona": "A technology enthusiast who is interested in space exploration and technology innovation. They are intrigued by the idea of modular space structures and the potential benefits it can bring, such as cost savings, improved maintenance and repair, and enhanced flexibility in space engineering. They are also fascinated by the integration of technology and gaming in space exploration and are eager to see how this technology will be used in space.",
+        "Idea number": 4
+    },
+    {
+        "Name": "softfold_parameter_regularization",
+        "Title": "Regularizing Soft Fold Layer Parameters for Enhanced Stability and Performance in PPO",
+        "Experiment": "Implement regularization terms for the SoftFold layer parameters within the PPO loss function.\n\nSpecifically:\n1. Add a regularization term to penalize small norms of the normal vector 'n'. This can be implemented as `lambda_n * (torch.norm(softfold.n) - min_norm)**2`, where `lambda_n` is a hyperparameter controlling the strength of the regularization and `min_norm` a threshold minimum norm of n.  Also added to summary statistics metrics as hyperparameter.\n2. Add regularization terms to penalize deviations of the 'crease' and 'stretch' parameters from a desired hyperparameter level. These represent the target or mint art -- high enough, but don't try too hard if not worth.\n For crease this could be `lambda_crease * (softfold.crease - target_crease)**2`.  Target can also have the intial parameter as it's value, but if the effect goes unnoticed, the search range should be centered a few units above and below.  Also added to summary statistics metrics as hyperparameter.\n3. Encouraging fold scale factors from shrinking into non-existence and regularize against 0: Regularize penalize the SOFTFOLD's sigmoid \"scale_factor\" (found after forward()) from averaging near zero by adding a penalty term when (torch.mean(torch.abs(scale_factor))) goes under some underuse_level = 0.05 (HP). Implemented by clamping the penalty after it averages past. `lambda_usage * torch.maximum(torch.tensor(0.0), underuse_level - torch.mean(torch.abs(scale_factor)))`. Log \"mean_scale_factor\" to show value.\n4. Add these regularization losses to the total loss before backpropagation, with tunable coefficients (`lambda_n`, `lambda_crease`, `lambda_usage`). These HP are also reported to statistics at the end, by averaging it across the steps.\n5. Log the individual regularization losses using the SummaryWriter to analyze their impact on training. If multiple SoftFold layers exist within the actor/critic network. These losses are combined through averaging their values from each step.\n6. Experiment with different values for the regularization coefficients to find optimal settings for performance. Copy the base code, to ensure there is something to compare against in the experiments.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 7,
+        "Persona": "A collector of ancient Roman coins, especially those from the Republic and the Empire periods. He has a keen interest in understanding the history and culture of ancient Rome and its impact on modern society. He is knowledgeable about the evolution of Roman coins from gods and historical figures to emperors and their wives. His collection is displayed in the Ventura College library, and he is open to sharing his knowledge and research with others.",
+        "Idea number": 5
+    },
+    {
+        "Name": "environment_conditioned_softfold",
+        "Title": "Environment-Conditioned Soft Fold Layers: Adapting Folding Behavior for Enhanced Generalization in PPO",
+        "Experiment": "Implement an environment encoder that maps observations from an environment to a low-dimensional embedding. This encoder can be a small neural network (e.g., a few linear layers with ReLU activations). Modify the Agent class to include this encoder. Collect the observations at different steps of the updates (beginning, middle, end from observation samples), normalized within their set observations so the maximums scale at unit. Use the environment encoder to generate an embedding for each environment across the X amount of observations. Implement a contrastive loss for the environment embeddings. This loss should encourage embeddings from the same environment to be similar, while embeddings from different environments should be dissimilar by using mean average embedding generated for an environment to minimize the squared distance while pushing averages of OTHER environments from original target using torch margin from 0.5-1). Normalize and collect each parameter norm average and gradient value with the scaled gradients sent for reporting, so gradients scalar won't be buried in calculations/scaling. The total average embeddings, normal vectors for all those embeddings is created to find scalar properties like the normal value norm (which encourages separation of embeddings). Report these scalar values, norm properties to ensure more insights into if they have a diverse set and truly representative, and have diverse gradient impacts based on that data point with these calculations being averaged at total, rather separate/averaged and combined as properties (or risk being useless after all it). The encoder will receive obs for first X steps, report initial scalar stats regarding each env's beginning observations from properties/gradients along vector, calculate those means, collect and report averages so ensure it all's balanced, etc... -- also create a new report showing environment property insights. All scalar hyper parameter values for each encoder values is also given values so there will always a known or learned starting for environment vectorization for what conditions should require x fold for what situations in certain quantities/situations! Add encoder/predictor as it's own group from gradients and parameters. Copy the base code, to ensure there is something to compare against in the experiments.",
+        "Interestingness": 10,
+        "Feasibility": 6,
+        "Novelty": 9,
+        "Persona": "A human rights activist who is particularly interested in the protection and enforcement of the rights of aliens under international law. They are knowledgeable about the rights recognized in the Covenant, including those related to non-discrimination, prohibition of inhuman treatment, and respect for family life. They have experience examining reports on the implementation of Covenant rights by States parties and have seen instances where aliens have been denied or limited rights without justification. They believe that in their reports, States parties should give attention to the position of aliens, both under their law and in actual practice. They are aware of the inherent right of aliens to life, liberty, and security of the person, and have seen instances where aliens have been arbitrarily deprived of life or subjected to torture, cruel, inhuman, or degrading treatment. They are committed to ensuring that the provisions of the Covenant and the rights under it are made known to aliens within their jurisdiction and that aliens are treated with respect and dignity.",
+        "Idea number": 6
+    },
+    {
+        "Name": "mixtureofsoftfoldexperts",
+        "Title": "Mixture of Soft Fold Experts: Dynamically Combining Folding Behaviors in PPO",
+        "Experiment": "Replace the single SoftFold layer in the actor and critic networks with a MixtureOfSoftFoldExperts (MoSE) layer. This new layer will consist of k SoftFold experts (k is a hyperparameter) and a gating network. The gating network will take the input tensor and produce weights (using a softmax activation) for each SoftFold expert. The output of the MoSE layer will be a weighted combination of the outputs of the individual experts. Compare performance against the baseline with a standard SoftFold layer. Create module, and gradient statistics combined. Copy the base code, to ensure there is something to compare against in the experiments.",
+        "Interestingness": 10,
+        "Feasibility": 7,
+        "Novelty": 9,
+        "Persona": "A data analyst who is responsible for analyzing and interpreting census data to help allocate federal funding to local communities. They are skilled in using statistical methods to identify trends and patterns in population growth, which can inform decisions on how to allocate resources for neighborhood improvements, public health, education, and transportation. They have a keen interest in the impact of census data on redistricting and the allocation of congressional and state legislative seats. They are also knowledgeable about the demographics of different regions and how they can be used to inform policy decisions.",
+        "Idea number": 7
+    },
+    {
+        "Name": "curvature_modulated_softfold",
+        "Title": "Curvature-Modulated Soft Fold Layers: Enhancing Adaptability in PPO with Dynamic Folding Behavior",
+        "Experiment": "Modify the SoftFold layer to incorporate a learnable curvature parameter that modulates the folding behavior. 1. Add a 'curvature' parameter to the SoftFold layer, initialized with a small value (e.g., 0.01). Make it a `nn.Parameter` so it's learnable. The value will control degree which is a circle as opposed to the line when the input data shifts. Also implement as separate statistics so the parameter can seen and that parameter scaled for each step or it's normalized. 2. In the forward pass, modify the calculation of 'residual_vec'. Instead of a linear projection, calculate an offset that shifts over as arc over instead, where curve == 0 is 2d plane. Create this curve shift over, and scale the curvature effect and its statistics, with gradients property (especially for which ones does useful work ie large changes during parameter or statistic), . `residual_vec = (1 - scale_factor).unsqueeze(1) * self.n + curvature_offset` and is combined before addition on to the starting vector. Finally scale, track it so has 1 reward indicator on scaling in gradients! 3. Experiment with different initial values and learning rates for the curvature parameter. Ensure if change comes it is big value shift which normalized it from becoming nothing especially. Log parameter to experiment and report overall, the scalar nature of it with these metrics and statistics to find ideal set to be stable but useful and meaningful with change.",
+        "Interestingness": 9,
+        "Feasibility": 8,
+        "Novelty": 8,
+        "Persona": "A medical ethicist who is deeply concerned with the ethical implications of medical research and the medical profession. They are passionate about the importance of informed consent and the principles of the Nuremberg Doctors' Code. They are knowledgeable about the history of medical ethics and the development of the concept of informed consent, and they have a strong understanding of the legal and ethical frameworks that govern medical practice. They are dedicated to promoting ethical standards in medical practice and advocating for the rights of patients to make informed decisions about their own healthcare.",
+        "Idea number": 8
+    },
+    {
+        "Name": "environment_specific_normal_vector",
+        "Title": "Environment-Specific Normal Vector Adaptation in Soft Fold Layers for Enhanced PPO Performance in Vectorized Environments",
+        "Experiment": "Modify the SoftFold layer to maintain a separate normal vector 'n' for each environment in the vectorized setting. Instead of having a single 'n', create a tensor 'n_envs' of shape (num_envs, width). During the forward pass, select the appropriate 'n' based on the current environment index and timestep. All steps scaling parameters across a shared parameter during its usage/rewarded based parameter gradients and properties report a final interaction statistic to highlight how each are impacted through parameters with scalars with gradient properties!",
+        "Interestingness": 8,
+        "Feasibility": 9,
+        "Novelty": 7,
+        "Persona": "A healthcare professional who is familiar with the latest trends and technologies in healthcare. They are interested in the use of the internet and social media in healthcare and are aware of the impact it has on patient behavior and decision-making. They are also aware of the importance of peer-to-peer sharing of healthcare advice and information, and are interested in ways to help patients find reputable information online. They are likely to be tech-savvy and use the internet and social media regularly in their practice.",
+        "Idea number": 9
+    }
+]
