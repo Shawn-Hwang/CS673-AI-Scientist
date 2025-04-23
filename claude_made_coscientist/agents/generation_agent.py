@@ -118,7 +118,10 @@ class GenerationAgent(BaseAgent):
         {prev_ideas_string}
         '''
         
-        Please use your domain knowledge to come up with a unique and innovative approach for improving or modifying this experiment. Make sure to make your idea distinct from the previous ones. 
+        Please use your domain knowledge to come up with the next impactful and creative idea for research experiments and directions you can feasibly investigate with the code provided. Make sure to make your idea distinct from the previous ones.
+        Note that you will not have access to any additional resources or datasets.
+        Make sure any idea is not overfit the specific training dataset or model, and has wider significance.
+
         For your novel idea, please provide:
         
         1. A short name (lowercase, underscore-separated)
@@ -142,6 +145,7 @@ class GenerationAgent(BaseAgent):
         
         Ensure your idea is creative, well-justified, and technically sound. It should introduce meaningful
         improvements to the experiment's architecture, training process, evaluation methodology, or objectives.
+        Remember to make sure you can feasibly investigate the idea with the code provided. The idea should not need to make drastic changes to the provided code.
         """
         
         return prompt
@@ -167,7 +171,11 @@ class GenerationAgent(BaseAgent):
         
         {lit_review_text}
         
-        Please generate {num_ideas} novel ideas for improving or modifying this experiment. For each idea, provide:
+        Please come up with {num_ideas} impactful and creative ideas for research experiments and directions you can feasibly investigate with the code provided. Make sure to make your ideas distinct from each other.
+        Note that you will not have access to any additional resources or datasets.
+        Make sure any idea is not overfit the specific training dataset or model, and has wider significance. 
+        
+        For each idea, please provide:
         
         1. A short name (lowercase, underscore-separated)
         2. A title in the style of a research paper
@@ -190,6 +198,7 @@ class GenerationAgent(BaseAgent):
         
         Ensure your ideas are creative, well-justified, and technically sound. They should introduce meaningful
         improvements to the experiment's architecture, training process, evaluation methodology, or objectives.
+        Remember to make sure you can feasibly investigate the idea with the code provided. The idea should not need to make drastic changes to the provided code.
         """
         
         return prompt
