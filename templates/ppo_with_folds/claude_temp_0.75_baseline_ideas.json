@@ -12,7 +12,7 @@
         "Idea number": 4
     },
     {
-        "Name": "input_dependent_stretch",
+        "Name": "input_dependent_stretch_0.75_baseline",
         "Title": "Input-Dependent Stretch Factor in SoftFold Layers for Enhanced Non-Linearity",
         "Experiment": "Make the stretch factor in the SoftFold layer dependent on the input tensor. Currently, the stretch factor is either a fixed value or a learnable scalar. Instead, make it a function of the input. This can be implemented by using a small neural network (e.g., a linear layer followed by a sigmoid activation) to predict the stretch factor based on the input.  For example, define a small neural network that takes the input tensor and outputs a scalar value between 0 and 2. The output of this neural network is then used as the stretch factor in the forward pass. This allows the SoftFold layer to dynamically adjust the amount of folding based on the characteristics of the input, potentially improving its ability to model complex non-linear relationships.",
         "Interestingness": 8,
@@ -24,7 +24,7 @@
         "Idea number": 6
     },
     {
-        "Name": "spectral_normalization",
+        "Name": "spectral_normalization_0.75_baseline",
         "Title": "Spectral Normalization of the SoftFold Normal Vector for Improved Stability and Generalization",
         "Experiment": "Apply spectral normalization to the `n` parameter (the normal vector) of the SoftFold layer. Spectral normalization constrains the Lipschitz constant of the layer, leading to more stable training and better generalization. This can be implemented using the `torch.nn.utils.parametrizations.spectral_norm` function from PyTorch. Wrap the normal vector `n` with spectral_norm. This will reparameterize `n` such that its spectral norm is 1, which can help prevent exploding gradients during training. For example, `self.n = nn.Parameter(torch.randn(self.width)) self.n = torch.nn.utils.parametrizations.spectral_norm(self.n)`. This could stabilize training and improve the generalization performance of the SoftFold layer.",
         "Interestingness": 8,
@@ -36,7 +36,7 @@
         "Idea number": 2
     },
     {
-        "Name": "adaptive_crease",
+        "Name": "adaptive_crease_0.75_baseline",
         "Title": "Adaptive Crease Parameter Control for Enhanced SoftFold Layer Performance",
         "Experiment": "Instead of a fixed or learned scalar crease parameter, implement an adaptive crease parameter that varies based on the input tensor. This could be achieved by making the crease parameter a function of the input's magnitude or variance. For example, `crease = nn.Parameter(torch.sigmoid(input_tensor.norm(dim=1, keepdim=True)))`. This allows the SoftFold layer to dynamically adjust its folding behavior based on the characteristics of the incoming data. This could be implemented by calculating the norm of the input tensor and using a sigmoid function to map this value to a crease parameter between 0 and 1. The output of the sigmoid function would then be used to scale the x_dot_n parameter in the forward pass. This would allow the SoftFold layer to dynamically adjust its folding behavior based on the magnitude of the input tensor, potentially improving its performance in environments with varying input distributions.",
         "Interestingness": 8,
@@ -48,7 +48,7 @@
         "Idea number": 1
     },
     {
-        "Name": "softfold_attention",
+        "Name": "softfold_attention_0.75_baseline",
         "Title": "SoftFold-Based Attention Mechanism for Enhanced Feature Interactions in MLPs",
         "Experiment": "Integrate a SoftFold-based attention mechanism within the MLP. Instead of directly feeding the output of a SoftFold layer to the next linear layer, use it to compute attention weights over different features of the input. This can be implemented by using the SoftFold output as a query vector in an attention mechanism, where the keys and values are derived from the same input.  Specifically, perform Softfold(x) to produce 'query'. Then perform linear transformations to get key, value from x. Then do attention operation with query, key, value, and the output is fed to the next layer. This would allow the network to dynamically focus on the most relevant features for each input, potentially improving performance.",
         "Interestingness": 9,
@@ -60,7 +60,7 @@
         "Idea number": 3
     },
     {
-        "Name": "softfold_regularization",
+        "Name": "softfold_regularization_0.75_baseline",
         "Title": "Regularization Techniques for SoftFold Layers: Improving Generalization and Stability",
         "Experiment": "Implement regularization techniques specifically tailored for the SoftFold layer. This could involve adding a penalty term to the loss function that encourages certain properties of the normal vector `n` or the crease parameter.  For example, L1 regularization on the normal vector to encourage sparsity, or a penalty on the magnitude of the crease parameter to prevent it from becoming too large. This can be implemented by adding the regularization term to the overall loss function during training. For instance, `loss += lambda * torch.norm(agent.softfold.n, p=1)` where lambda is a hyperparameter. The L1 regularization adds a penalty for large values in the normal vector, effectively encouraging sparsity. Experiment with L1 and L2 regularization and different regularization coefficients.",
         "Interestingness": 9,
